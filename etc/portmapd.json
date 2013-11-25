@@ -1,0 +1,28 @@
+{
+    "port": 111,
+    "mappings": {
+        "mountd": [{
+            "prog": 100005,
+            "vers": 3,
+            "prot": 6,
+            "port": 1892
+        }, {
+            "prog": 100005,
+            "vers": 1,
+            "prot": 6,
+            "port": 1892
+        }],
+        "nfsd": [{
+            "prog": 100003,
+            "vers": 3,
+            "prot": 6,
+            "port": 2049
+        }],
+        "portmapd": [{
+            "prog": 100000,
+            "vers": 2,
+            "prot": 6,
+            "port": 111
+        }]
+    }
+}

@@ -1,0 +1,60 @@
+{
+    "database": {
+        "location": "/tmp/nfs.db",
+        "options": {
+            "createIfMissing": true,
+            "errorIfExists": false,
+            "compression": false,
+            "cacheSize": 1.342e+8,
+            "keyEncoding": "utf8",
+            "valueEncoding": "json"
+        }
+    },
+    "manta": {
+        "keyFile": "/Users/mcavage/.ssh/id_rsa",
+        "keyId": "7b:c0:5c:d6:9e:11:0c:76:04:4b:03:c9:11:f2:72:7f",
+        "url": "https://us-east.manta.joyent.com",
+        "user": "mark.cavage"
+    },
+    "mount": {
+        "exports": {
+            "/mark.cavage/stor/twitter": {
+                "max_files": 100,
+                "path": "/var/tmp/foo",
+                "sizeMB": 1024,
+                "ttl": 3600
+            }
+        }
+    },
+    "nfs": {
+
+    },
+    "portmap": {
+        "port": 111,
+        "mappings": {
+            "mountd": [{
+                "prog": 100005,
+                "vers": 3,
+                "prot": 6,
+                "port": 1892
+            }, {
+                "prog": 100005,
+                "vers": 1,
+                "prot": 6,
+                "port": 1892
+            }],
+            "nfsd": [{
+                "prog": 100003,
+                "vers": 3,
+                "prot": 6,
+                "port": 2049
+            }],
+            "portmapd": [{
+                "prog": 100000,
+                "vers": 2,
+                "prot": 6,
+                "port": 111
+            }]
+        }
+    }
+}
