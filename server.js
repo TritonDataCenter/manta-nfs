@@ -146,48 +146,48 @@ function step_down() {
             return (e);
         });
 
-        app.initializeFsCache(exports, function onFsCacheReady(fs_err) {
-            if (fs_err) {
-                log.fatal(fs_err, 'unable to initialize FS cache');
-                process.exit(1);
-            }
+        var _p = cfg.portmap.port || 111;
+        var _h = cfg.portmap.host || '0.0.0.0';
+        var pmapd = app.createPortmapServer(cfg.portmap);
+        pmapd.listen(_p, _h, function () {
+            step_down();
+            app.initializeFsCache(exports, function onFsCacheReady(fs_err) {
+                if (fs_err) {
+                    log.fatal(fs_err, 'unable to initialize FS cache');
+                    process.exit(1);
+                }
 
-            cfg.mount.database = db;
-            cfg.nfs.database = db;
+                cfg.mount.database = db;
+                cfg.nfs.database = db;
 
-            var barrier = vasync.barrier();
-            var mountd = app.createMountServer(cfg.mount);
-            var nfsd = app.createNfsServer(cfg.nfs);
-            var pmapd = app.createPortmapServer(cfg.portmap);
+                var barrier = vasync.barrier();
+                var mountd = app.createMountServer(cfg.mount);
+                var nfsd = app.createNfsServer(cfg.nfs);
 
-            barrier.on('drain', function onRunning() {
-                step_down();
-                var ma = mountd.address();
-                var na = nfsd.address();
-                var pa = pmapd.address();
+                barrier.on('drain', function onRunning() {
+                    var ma = mountd.address();
+                    var na = nfsd.address();
+                    var pa = pmapd.address();
 
-                log.info('mountd: listening on: tcp://%s:%d',
-                         ma.address, ma.port);
-                log.info('nfsd: listening on: tcp://%s:%d',
-                         na.address, na.port);
-                log.info('portmapd: listening on: tcp://%s:%d',
-                         pa.address, pa.port);
+                    log.info('mountd: listening on: tcp://%s:%d',
+                             ma.address, ma.port);
+                    log.info('nfsd: listening on: tcp://%s:%d',
+                             na.address, na.port);
+                    log.info('portmapd: listening on: tcp://%s:%d',
+                             pa.address, pa.port);
+                });
+
+                barrier.start('mount');
+                mountd.listen(cfg.mount.port || 1892,
+                              cfg.mount.host || '0.0.0.0',
+                              barrier.done.bind(barrier, 'mount'));
+
+                barrier.start('nfs');
+                nfsd.listen(cfg.nfs.port || 2049,
+                            cfg.nfs.host || '0.0.0.0',
+                            barrier.done.bind(barrier, 'nfs'));
+
             });
-
-            barrier.start('mount');
-            mountd.listen(cfg.mount.port || 1892,
-                          cfg.mount.host || '0.0.0.0',
-                          barrier.done.bind(barrier, 'mount'));
-
-            barrier.start('nfs');
-            nfsd.listen(cfg.nfs.port || 2049,
-                        cfg.nfs.host || '0.0.0.0',
-                        barrier.done.bind(barrier, 'nfs'));
-
-            barrier.start('portmap');
-            pmapd.listen(cfg.portmap.port || 111,
-                         cfg.portmap.host || '0.0.0.0',
-                         barrier.done.bind(barrier, 'portmap'));
         });
     });
 })();

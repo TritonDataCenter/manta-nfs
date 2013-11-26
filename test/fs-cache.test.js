@@ -349,3 +349,18 @@ test('read throws on ENOENT', function (t) {
         t.end();
     });
 });
+
+
+test('mkdir', function (t) {
+    var cache = this.cache;
+    var name = libuuid.create();
+
+    var stream = cache.mkdir(name);
+    stream.once('error', function (err) {
+        t.ifError(err);
+        t.end();
+    });
+
+    stream.once('flush', t.end.bind(t));
+    stream.end();
+});

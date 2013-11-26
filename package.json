@@ -22,7 +22,7 @@
         "dashdash": "1.3.2",
         "joi": "2.0.3",
         "leveldown": "0.10.0",
-        "levelup": "0.18.0",
+        "levelup": "0.18.1",
         "libuuid": "0.1.2",
         "lru-cache": "2.5.0",
         "manta": "1.2.2",
@@ -30,6 +30,7 @@
         "nfs": "git+ssh://git@github.com:joyent/node-nfs.git#master",
         "once": "1.2.0",
         "oncrpc": "git+ssh://git@github.com:joyent/node-oncrpc.git#master",
+        "sse4_crc32": "git://github.com/Voxer/sse4_crc32.git",
         "statvfs": "2.1.0",
         "vasync": "1.4.0"
     },
