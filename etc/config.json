@@ -18,7 +18,7 @@
     },
     "mount": {
         "exports": {
-            "/mark.cavage/stor/twitter": {
+            "/mark.cavage/stor/foo": {
                 "max_files": 100,
                 "path": "/var/tmp/foo",
                 "sizeMB": 1024,

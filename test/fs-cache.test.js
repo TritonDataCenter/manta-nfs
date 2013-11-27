@@ -258,7 +258,7 @@ test('read ok', function (t) {
 });
 
 
-test('read expired not ok', function (t) {
+test('read expired not ok (1s lag)', function (t) {
     var cache = this.cache;
     var data = crypto.pseudoRandomBytes(100);
     var name = libuuid.create();
@@ -277,7 +277,7 @@ test('read expired not ok', function (t) {
                 t.ok(err);
                 t.end();
             });
-        }, 3);
+        }, 1100);
     });
 
     writer.end(data);
@@ -362,5 +362,34 @@ test('mkdir', function (t) {
     });
 
     stream.once('flush', t.end.bind(t));
+    stream.end();
+});
+
+
+test('readdir', function (t) {
+    var cache = this.cache;
+    var name = libuuid.create();
+
+    var stream = cache.mkdir(name);
+    stream.once('error', function (err) {
+        t.ifError(err);
+        t.end();
+    });
+
+    stream.once('flush', function () {
+        cache.readdir(name, function (err, files) {
+            t.ifError(err);
+            t.ok(files);
+            t.equal(files.length, 100);
+            t.end();
+        });
+    });
+
+    // stub out what manta looks like
+    for (var i = 0; i < 100; i++) {
+        var n = '' + i;
+        stream.write(JSON.stringify({name: n}) + '\n');
+    }
+
     stream.end();
 });

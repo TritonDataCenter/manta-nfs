@@ -25,6 +25,7 @@
         "levelup": "0.18.1",
         "libuuid": "0.1.2",
         "lru-cache": "2.5.0",
+        "lstream": "0.0.3",
         "manta": "1.2.2",
         "mkdirp": "0.3.5",
         "nfs": "git+ssh://git@github.com:joyent/node-nfs.git#master",
