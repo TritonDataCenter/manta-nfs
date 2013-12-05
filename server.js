@@ -14,6 +14,7 @@ var clone = require('clone');
 var dashdash = require('dashdash');
 var nfs = require('nfs');
 var rpc = require('oncrpc');
+var mantafs = require('mantafs');
 var vasync = require('vasync');
 
 var app = require('./lib');
@@ -123,71 +124,60 @@ function step_down() {
     var cfg = configure();
     var log = cfg.log;
 
-    app.createDatabase(cfg.database, function onDatabaseReady(db_err, db) {
-        if (db_err) {
-            log.fatal(db_err,
-                      'unable to open leveldb database(%s)',
-                      cfg.database.location);
-            process.exit(1);
-        }
+    // XXX fix config handling
+    var e = {
+        files: 100,
+        log: log.child({component: 'FsCache'}, true),
+        manta: cfg.manta,
+        path: '/var/tmp/mfsdb',
+        sizeMB: 1024,
+        ttl: 3600
+    };
 
-        var exports = Object.keys(cfg.mount.exports).map(function (k) {
-            var exp = cfg.mount.exports[k];
-            var e = {
-                db: db,
-                log: log.child({component: 'FsCache'}, true),
-                location: exp.path,
-                name: k,
-                count: cfg.max_files,
-                sizeMB: exp.sizeMB,
-                ttl: exp.ttl
-            };
-
-            return (e);
-        });
-
+    var mfs = mantafs.createClient(e);
+    mfs.once('error', function (err) {
+        log.fatal(err, 'unable to initialize mantafs cache');
+        process.exit(1);
+    });
+    mfs.once('ready', function () {
         var _p = cfg.portmap.port || 111;
         var _h = cfg.portmap.host || '0.0.0.0';
         var pmapd = app.createPortmapServer(cfg.portmap);
         pmapd.listen(_p, _h, function () {
             step_down();
-            app.initializeFsCache(exports, function onFsCacheReady(fs_err) {
-                if (fs_err) {
-                    log.fatal(fs_err, 'unable to initialize FS cache');
-                    process.exit(1);
-                }
 
-                cfg.mount.database = db;
-                cfg.nfs.database = db;
+            cfg.mount.fs = mfs;
+            cfg.mount.cachepath = '/var/tmp/mfsdb';    // XXX
+            cfg.nfs.fs = mfs;
+            cfg.nfs.cachepath = '/var/tmp/mfsdb';    // XXX
 
-                var barrier = vasync.barrier();
-                var mountd = app.createMountServer(cfg.mount);
-                var nfsd = app.createNfsServer(cfg.nfs);
+            var barrier = vasync.barrier();
+            var mountd = app.createMountServer(cfg.mount);
+            var nfsd = app.createNfsServer(cfg.nfs);
 
-                barrier.on('drain', function onRunning() {
-                    var ma = mountd.address();
-                    var na = nfsd.address();
-                    var pa = pmapd.address();
+            barrier.on('drain', function onRunning() {
+                var ma = mountd.address();
+                var na = nfsd.address();
+                var pa = pmapd.address();
 
-                    log.info('mountd: listening on: tcp://%s:%d',
-                             ma.address, ma.port);
-                    log.info('nfsd: listening on: tcp://%s:%d',
-                             na.address, na.port);
-                    log.info('portmapd: listening on: tcp://%s:%d',
-                             pa.address, pa.port);
-                });
-
-                barrier.start('mount');
-                mountd.listen(cfg.mount.port || 1892,
-                              cfg.mount.host || '0.0.0.0',
-                              barrier.done.bind(barrier, 'mount'));
-
-                barrier.start('nfs');
-                nfsd.listen(cfg.nfs.port || 2049,
-                            cfg.nfs.host || '0.0.0.0',
-                            barrier.done.bind(barrier, 'nfs'));
-
+                log.info('mountd: listening on: tcp://%s:%d',
+                         ma.address, ma.port);
+                log.info('nfsd: listening on: tcp://%s:%d',
+                         na.address, na.port);
+                log.info('portmapd: listening on: tcp://%s:%d',
+                         pa.address, pa.port);
             });
+
+            barrier.start('mount');
+            mountd.listen(cfg.mount.port || 1892,
+                          cfg.mount.host || '0.0.0.0',
+                          barrier.done.bind(barrier, 'mount'));
+
+            barrier.start('nfs');
+            nfsd.listen(cfg.nfs.port || 2049,
+                        cfg.nfs.host || '0.0.0.0',
+                        barrier.done.bind(barrier, 'nfs'));
+
         });
     });
 })();
