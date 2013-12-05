@@ -144,7 +144,10 @@ function step_down() {
         var _h = cfg.portmap.host || '0.0.0.0';
         var pmapd = app.createPortmapServer(cfg.portmap);
         pmapd.listen(_p, _h, function () {
-            step_down();
+            // XXX Before we step_down make sure the cache dir is writeable
+            // with the lower privs. Who should own the cache and what should
+            // the mode be for proper security.
+            // step_down();
 
             cfg.mount.fs = mfs;
             cfg.mount.cachepath = '/var/tmp/mfsdb';    // XXX
