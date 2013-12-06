@@ -24,7 +24,6 @@
         "leveldown": "0.10.0",
         "levelup": "0.18.1",
         "libuuid": "0.1.2",
-        "lru-cache": "2.5.0",
         "lstream": "0.0.3",
         "manta": "git+ssh://git@github.com:joyent/node-manta.git#master",
         "mantafs": "git+ssh://git@github.com:joyent/node-mantafs.git#master",
