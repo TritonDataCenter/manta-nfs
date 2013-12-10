@@ -92,7 +92,6 @@ function configure() {
     assert.object(cfg.portmap, 'config.portmap');
 
     cfg.log = LOG;
-    cfg.database.log = LOG;
     cfg.manta.log = LOG;
     cfg.mount.log = LOG;
     cfg.nfs.log = LOG;
@@ -124,17 +123,18 @@ function step_down() {
     var cfg = configure();
     var log = cfg.log;
 
-    // XXX fix config handling
-    var e = {
-        files: 100,
-        log: log.child({component: 'FsCache'}, true),
+    var mfs = mantafs.createClient({
+        files: cfg.database.max_files,
+        log: log.child({component: 'MantaFs'}, true),
         manta: cfg.manta,
-        path: '/var/tmp/mfsdb',
-        sizeMB: 1024,
-        ttl: 3600
-    };
+        path: cfg.database.location,
+        sizeMB: cfg.database.sizeMB,
+        ttl: cfg.database.ttl
+    });
 
-    var mfs = mantafs.createClient(e);
+    cfg.mount.fs = mfs;
+    cfg.nfs.fs = mfs;
+    cfg.nfs.cachepath = cfg.database.location;    // used by fsstat
 
     process.on('SIGINT', function () {
         log.debug('Got SIGINT, shutting down.');
@@ -160,11 +160,6 @@ function step_down() {
             // with the lower privs. Who should own the cache and what should
             // the mode be for proper security.
             // step_down();
-
-            cfg.mount.fs = mfs;
-            cfg.mount.cachepath = '/var/tmp/mfsdb';    // XXX
-            cfg.nfs.fs = mfs;
-            cfg.nfs.cachepath = '/var/tmp/mfsdb';    // XXX
 
             var barrier = vasync.barrier();
             var mountd = app.createMountServer(cfg.mount);

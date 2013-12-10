@@ -1,14 +1,9 @@
 {
     "database": {
-        "location": "/tmp/nfs.db",
-        "options": {
-            "createIfMissing": true,
-            "errorIfExists": false,
-            "compression": false,
-            "cacheSize": 1.342e+8,
-            "keyEncoding": "utf8",
-            "valueEncoding": "json"
-        }
+        "location": "/var/tmp/mfsdb",
+        "max_files": 100,
+        "sizeMB": 1024,
+        "ttl": 3600
     },
     "manta": {
         "keyFile": "/Users/mcavage/.ssh/id_rsa",
@@ -19,10 +14,6 @@
     "mount": {
         "exports": {
             "/mark.cavage/stor/foo": {
-                "max_files": 100,
-                "path": "/var/tmp/foo",
-                "sizeMB": 1024,
-                "ttl": 3600
             }
         }
     },
