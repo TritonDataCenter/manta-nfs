@@ -135,6 +135,18 @@ function step_down() {
     };
 
     var mfs = mantafs.createClient(e);
+
+    process.on('SIGINT', function () {
+        log.debug('Got SIGINT, shutting down.');
+        mfs.shutdown(function (err) {
+            if (err) {
+                log.warn(err, 'mantafs shutdown error');
+            }
+
+            log.debug('Shutdown complete, exiting.');
+            process.exit(0);
+        });
+    });
     mfs.once('error', function (err) {
         log.fatal(err, 'unable to initialize mantafs cache');
         process.exit(1);
