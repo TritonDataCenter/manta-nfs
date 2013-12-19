@@ -115,7 +115,33 @@ function step_down() {
     }
 }
 
+// Runs the mountd and nfsd servers. Called once we're registered with the
+// system's portmapper or once we've started our own portmapper.
+function run_servers(log, cfg_mount, cfg_nfs) {
+    var barrier = vasync.barrier();
+    var mountd = app.createMountServer(cfg_mount);
+    var nfsd = app.createNfsServer(cfg_nfs);
 
+    barrier.on('drain', function onRunning() {
+        var ma = mountd.address();
+        var na = nfsd.address();
+
+        log.info('mountd: listening on: tcp://%s:%d',
+                 ma.address, ma.port);
+        log.info('nfsd: listening on: tcp://%s:%d',
+                 na.address, na.port);
+    });
+
+    barrier.start('mount');
+    mountd.listen(cfg_mount.port || 1892,
+                  cfg_mount.host || '0.0.0.0',
+                  barrier.done.bind(barrier, 'mount'));
+
+    barrier.start('nfs');
+    nfsd.listen(cfg_nfs.port || 2049,
+                cfg_nfs.host || '0.0.0.0',
+                barrier.done.bind(barrier, 'nfs'));
+}
 
 ///--- Mainline
 
@@ -147,47 +173,65 @@ function step_down() {
             process.exit(0);
         });
     });
+
     mfs.once('error', function (err) {
         log.fatal(err, 'unable to initialize mantafs cache');
         process.exit(1);
     });
     mfs.once('ready', function () {
-        var _p = cfg.portmap.port || 111;
-        var _h = cfg.portmap.host || '0.0.0.0';
-        var pmapd = app.createPortmapServer(cfg.portmap);
-        pmapd.listen(_p, _h, function () {
-            // XXX Before we step_down make sure the cache dir is writeable
-            // with the lower privs. Who should own the cache and what should
-            // the mode be for proper security.
-            // step_down();
+        cfg.portmap.host = cfg.portmap.host || '0.0.0.0';
+        cfg.portmap.port = cfg.portmap.port || 111;
 
-            var barrier = vasync.barrier();
-            var mountd = app.createMountServer(cfg.mount);
-            var nfsd = app.createNfsServer(cfg.nfs);
+        if (cfg.portmap.usehost) {
+            // Here we register with the system's existing portmapper
 
-            barrier.on('drain', function onRunning() {
-                var ma = mountd.address();
-                var na = nfsd.address();
-                var pa = pmapd.address();
+            cfg.portmap.url = util.format('udp://%s:%d',
+                cfg.portmap.host, cfg.portmap.port);
+            var pmapclient = app.createPortmapClient(cfg.portmap);
 
-                log.info('mountd: listening on: tcp://%s:%d',
-                         ma.address, ma.port);
-                log.info('nfsd: listening on: tcp://%s:%d',
-                         na.address, na.port);
-                log.info('portmapd: listening on: tcp://%s:%d',
-                         pa.address, pa.port);
+            pmapclient.once('connect', function () {
+                var mntmapping = {
+                    prog: 100005,
+                    vers: 3,
+                    prot: 6,
+                    port: 1892
+                };
+                pmapclient.set(mntmapping, function (err1) {
+                    if (err1) {
+                        log.fatal(err1,
+                            'unable to register mountd with the portmapper');
+                        process.exit(1);
+                    }
+
+                    var nfsmapping = {
+                        prog: 100003,
+                        vers: 3,
+                        prot: 6,
+                        port: 2049
+                    };
+                    pmapclient.set(nfsmapping, function (err2) {
+                        if (err2) {
+                            log.fatal(err2,
+                                'unable to register nfsd with the portmapper');
+                            process.exit(1);
+                        }
+
+                        run_servers(cfg.log, cfg.mount, cfg.nfs);
+                    });
+                });
             });
+        } else {
+            // Here we run our own portmapper
 
-            barrier.start('mount');
-            mountd.listen(cfg.mount.port || 1892,
-                          cfg.mount.host || '0.0.0.0',
-                          barrier.done.bind(barrier, 'mount'));
+            var pmapd = app.createPortmapServer(cfg.portmap);
+            pmapd.listen(cfg.portmap.port, cfg.portmap.host, function () {
+                // XXX Before we step_down make sure the cache dir is writeable
+                // with the lower privs. Who should own the cache and what
+                // should the mode be for proper security.
+                // step_down();
 
-            barrier.start('nfs');
-            nfsd.listen(cfg.nfs.port || 2049,
-                        cfg.nfs.host || '0.0.0.0',
-                        barrier.done.bind(barrier, 'nfs'));
-
-        });
+                run_servers(cfg.log, cfg.mount, cfg.nfs);
+            });
+       }
     });
 })();
