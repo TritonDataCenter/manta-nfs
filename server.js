@@ -162,6 +162,21 @@ function run_servers(log, cfg_mount, cfg_nfs) {
     cfg.nfs.fs = mfs;
     cfg.nfs.cachepath = cfg.database.location;    // used by fsstat
 
+    var mntmapping = {
+        prog: 100005,
+        vers: 3,
+        prot: 6,
+        port: 1892
+    };
+
+    var nfsmapping = {
+        prog: 100003,
+        vers: 3,
+        prot: 6,
+        port: 2049
+    };
+    var pmapclient;
+
     process.on('SIGINT', function () {
         log.debug('Got SIGINT, shutting down.');
         mfs.shutdown(function (err) {
@@ -169,8 +184,26 @@ function run_servers(log, cfg_mount, cfg_nfs) {
                 log.warn(err, 'mantafs shutdown error');
             }
 
-            log.debug('Shutdown complete, exiting.');
-            process.exit(0);
+            if (cfg.portmap.usehost) {
+                pmapclient.unset(mntmapping, function (err1) {
+                    if (err1) {
+                        log.fatal(err1,
+                            'unable to unregister mountd from the portmapper');
+                    }
+
+                    pmapclient.unset(nfsmapping, function (err2) {
+                        if (err2) {
+                            log.fatal(err2,
+                            'unable to unregister nfsd from the portmapper');
+                        }
+                        log.debug('Shutdown complete, exiting.');
+                        process.exit(0);
+                    });
+                });
+            } else {
+                log.debug('Shutdown complete, exiting.');
+                process.exit(0);
+            }
         });
     });
 
@@ -187,15 +220,9 @@ function run_servers(log, cfg_mount, cfg_nfs) {
 
             cfg.portmap.url = util.format('udp://%s:%d',
                 cfg.portmap.host, cfg.portmap.port);
-            var pmapclient = app.createPortmapClient(cfg.portmap);
+            pmapclient = app.createPortmapClient(cfg.portmap);
 
             pmapclient.once('connect', function () {
-                var mntmapping = {
-                    prog: 100005,
-                    vers: 3,
-                    prot: 6,
-                    port: 1892
-                };
                 pmapclient.set(mntmapping, function (err1) {
                     if (err1) {
                         log.fatal(err1,
@@ -203,12 +230,6 @@ function run_servers(log, cfg_mount, cfg_nfs) {
                         process.exit(1);
                     }
 
-                    var nfsmapping = {
-                        prog: 100003,
-                        vers: 3,
-                        prot: 6,
-                        port: 2049
-                    };
                     pmapclient.set(nfsmapping, function (err2) {
                         if (err2) {
                             log.fatal(err2,
