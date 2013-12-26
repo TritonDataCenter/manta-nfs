@@ -34,6 +34,11 @@ var OPTIONS_PARSER = dashdash.createParser({
             helpArg: 'FILE'
         },
         {
+            names: ['debug', 'd'],
+            type: 'bool',
+            help: 'turn on debug bunyan logging'
+        },
+        {
             names: ['verbose', 'v'],
             type: 'bool',
             help: 'turn on verbose bunyan logging'
@@ -70,6 +75,16 @@ function configure() {
     if (opts.verbose) {
         LOG = LOG.child({
             level: 'trace',
+            src: true
+        });
+    } else if (opts.debug) {
+        LOG = LOG.child({
+            level: 'debug',
+            src: true
+        });
+    } else {
+        LOG = LOG.child({
+            level: 'info',
             src: true
         });
     }
