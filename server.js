@@ -193,7 +193,7 @@ function run_servers(log, cfg_mount, cfg_nfs) {
     var pmapclient;
 
     process.on('SIGINT', function () {
-        log.debug('Got SIGINT, shutting down.');
+        log.info('Got SIGINT, shutting down.');
         mfs.shutdown(function (err) {
             if (err) {
                 log.warn(err, 'mantafs shutdown error');
@@ -202,21 +202,21 @@ function run_servers(log, cfg_mount, cfg_nfs) {
             if (cfg.portmap.usehost) {
                 pmapclient.unset(mntmapping, function (err1) {
                     if (err1) {
-                        log.fatal(err1,
+                        log.warn(err1,
                             'unable to unregister mountd from the portmapper');
                     }
 
                     pmapclient.unset(nfsmapping, function (err2) {
                         if (err2) {
-                            log.fatal(err2,
+                            log.warn(err2,
                             'unable to unregister nfsd from the portmapper');
                         }
-                        log.debug('Shutdown complete, exiting.');
+                        log.info('Shutdown complete, exiting.');
                         process.exit(0);
                     });
                 });
             } else {
-                log.debug('Shutdown complete, exiting.');
+                log.info('Shutdown complete, exiting.');
                 process.exit(0);
             }
         });
