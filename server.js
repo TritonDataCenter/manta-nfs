@@ -102,9 +102,57 @@ function configure() {
 
     assert.object(cfg.database, 'config.database');
     assert.object(cfg.manta, 'config.manta');
-    assert.object(cfg.mount, 'config.mount');
-    assert.object(cfg.nfs, 'config.nfs');
-    assert.object(cfg.portmap, 'config.portmap');
+
+    cfg.nfs = {};
+
+    if (cfg.portmap) {
+        assert.object(cfg.portmap, 'config.portmap');
+        // normally only need to define this section if setting
+        // 'usehost': 1
+        // so that we use the system's portmapper, although you could override
+        // the prognum/vers/port for testing
+    } else {
+        cfg.portmap = {
+            'port': 111,
+            'mappings': {
+                'mountd': [ {
+                    'prog': 100005,
+                    'vers': 3,
+                    'prot': 6,
+                    'port': 1892
+                }, {
+                    'prog': 100005,
+                    'vers': 1,
+                    'prot': 6,
+                    'port': 1892
+                }],
+                'nfsd': [ {
+                    'prog': 100003,
+                    'vers': 3,
+                    'prot': 6,
+                    'port': 2049
+                }],
+                'portmapd': [ {
+                    'prog': 100000,
+                    'vers': 2,
+                    'prot': 6,
+                    'port': 111
+                }]
+            }
+        };
+    }
+
+    if (cfg.mount) {
+        assert.object(cfg.mount, 'config.mount');
+        // normally only need to define this if you want to query the mountd to
+        // see exports. If defined, mounts are restricted to these paths. e.g.
+        //     'exports': {
+        //        '/user/public/foo': {},
+        //        '/user/stor': {}
+        //     }
+    } else {
+        cfg.mount = {};
+    }
 
     cfg.log = LOG;
     cfg.manta.log = LOG;
