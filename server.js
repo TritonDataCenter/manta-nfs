@@ -100,10 +100,21 @@ function configure() {
         usage('unable to load %s:\n%s\n', fname, e.toString());
     }
 
-    assert.object(cfg.database, 'config.database');
     assert.object(cfg.manta, 'config.manta');
 
     cfg.nfs = {};
+
+    if (cfg.database) {
+        assert.object(cfg.database, 'config.database');
+    } else {
+        // default local cache config
+        cfg.database = {
+            'location': '/var/tmp/mfsdb',
+            'max_files': 100,
+            'sizeMB': 1024,
+            'ttl': 3600
+        };
+    }
 
     if (cfg.portmap) {
         assert.object(cfg.portmap, 'config.portmap');
