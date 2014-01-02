@@ -1,1 +1,1 @@
-sudo rm -rf /var/tmp/mfsdb; sudo node server.js -v | bunyan
+sudo rm -rf /var/tmp/mfsdb; sudo -E node server.js -d | bunyan
