@@ -330,7 +330,7 @@ function run_servers(log, cfg_mount, cfg_nfs) {
                     });
                 });
             });
-        };
+        }
 
         if (cfg.portmap.usehost) {
             register_with_pmap();
