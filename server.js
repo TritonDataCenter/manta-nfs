@@ -305,9 +305,8 @@ function run_servers(log, cfg_mount, cfg_nfs) {
         cfg.portmap.host = cfg.portmap.host || '0.0.0.0';
         cfg.portmap.port = cfg.portmap.port || 111;
 
-        if (cfg.portmap.usehost) {
-            // Here we register with the system's existing portmapper
-
+        // Use the system's portmapper
+        function register_with_pmap() {
             cfg.portmap.url = util.format('udp://%s:%d',
                 cfg.portmap.host, cfg.portmap.port);
             pmapclient = app.createPortmapClient(cfg.portmap);
@@ -331,10 +330,24 @@ function run_servers(log, cfg_mount, cfg_nfs) {
                     });
                 });
             });
+        };
+
+        if (cfg.portmap.usehost) {
+            register_with_pmap();
         } else {
             // Here we run our own portmapper
-
             var pmapd = app.createPortmapServer(cfg.portmap);
+
+            pmapd.on('error', function (e) {
+                if (e.code == 'EADDRINUSE') {
+                    log.info('Portmapper address in use, registering...');
+                    register_with_pmap();
+                } else {
+                    log.fatal(e, 'unable to run the portmapper');
+                    process.exit(1);
+                }
+            });
+
             pmapd.listen(cfg.portmap.port, cfg.portmap.host, function () {
                 // XXX Before we step_down make sure the cache dir is writeable
                 // with the lower privs. Who should own the cache and what
