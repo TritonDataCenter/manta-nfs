@@ -109,10 +109,10 @@ function configure() {
         // use the manta config in the environment
         // assume if MANTA_USER is set, all 3 are set
         cfg.manta = {
-            "keyFile": path.join(process.env.HOME, '.ssh/id_rsa'),
-            "keyId": process.env.MANTA_KEY_ID,
-            "url": process.env.MANTA_URL,
-            "user": process.env.MANTA_USER
+            'keyFile': path.join(process.env.HOME, '.ssh/id_rsa'),
+            'keyId': process.env.MANTA_KEY_ID,
+            'url': process.env.MANTA_URL,
+            'user': process.env.MANTA_USER
         };
     } else {
         usage('missing manta configuration and no manta environment variables');
