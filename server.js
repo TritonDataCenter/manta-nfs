@@ -92,15 +92,31 @@ function configure() {
     if (opts.help)
         usage();
 
-    var fname = opts.file || path.resolve(__dirname, 'etc', 'config.json');
     var cfg;
-    try {
-        cfg = JSON.parse(fs.readFileSync(fname, 'utf8'));
-    } catch (e) {
-        usage('unable to load %s:\n%s\n', fname, e.toString());
+    if (opts.file) {
+        try {
+            cfg = JSON.parse(fs.readFileSync(opts.file, 'utf8'));
+        } catch (e) {
+            usage('unable to load %s:\n%s\n', opts.file, e.toString());
+        }
+    } else {
+        cfg = {};
     }
 
-    assert.object(cfg.manta, 'config.manta');
+    if (cfg.manta) {
+        assert.object(cfg.manta, 'config.manta');
+    } else if (process.env.MANTA_USER && process.env.HOME) {
+        // use the manta config in the environment
+        // assume if MANTA_USER is set, all 3 are set
+        cfg.manta = {
+            "keyFile": path.join(process.env.HOME, '.ssh/id_rsa'),
+            "keyId": process.env.MANTA_KEY_ID,
+            "url": process.env.MANTA_URL,
+            "user": process.env.MANTA_USER
+        };
+    } else {
+        usage('missing manta configuration and no manta environment variables');
+    }
 
     cfg.nfs = {};
 
