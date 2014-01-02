@@ -125,10 +125,10 @@ function configure() {
     } else {
         // default local cache config
         cfg.database = {
-            'location': '/var/tmp/mfsdb',
-            'max_files': 100,
-            'sizeMB': 1024,
-            'ttl': 3600
+            location: '/var/tmp/mfsdb',
+            max_files: 65535,
+            sizeMB: 1024,
+            ttl: 3600
         };
     }
 
