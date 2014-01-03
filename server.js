@@ -260,7 +260,7 @@ function run_servers(log, cfg_mount, cfg_nfs) {
         dispose: function cache_close_fd(k, v) {
             mfs.close(v.fd, function on_close(err) {
                 if (err)
-                    log.warn(err, 'failed to close(fd=%d) for %s', v.fd, k);
+                    log.debug(err, 'failed to close(fd=%d) for %s', v.fd, k);
             });
         },
         max: cfg.nfs.fd_cache.max,
