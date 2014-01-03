@@ -12,6 +12,7 @@ var assert = require('assert-plus');
 var bunyan = require('bunyan');
 var clone = require('clone');
 var dashdash = require('dashdash');
+var LRU = require('lru-cache');
 var nfs = require('nfs');
 var rpc = require('oncrpc');
 var mantafs = require('mantafs');
@@ -118,8 +119,6 @@ function configure() {
         usage('missing manta configuration and no manta environment variables');
     }
 
-    cfg.nfs = {};
-
     if (cfg.database) {
         assert.object(cfg.database, 'config.database');
     } else {
@@ -180,6 +179,13 @@ function configure() {
     } else {
         cfg.mount = {};
     }
+
+    cfg.nfs = cfg.nfs || {};
+    assert.object(cfg.nfs, 'config.nfs');
+    cfg.nfs.fd_cache = cfg.nfs.fd_cache || {
+        max: 10000,
+        ttl: 60
+    };
 
     cfg.log = LOG;
     cfg.manta.log = LOG;
@@ -250,6 +256,17 @@ function run_servers(log, cfg_mount, cfg_nfs) {
 
     cfg.mount.fs = mfs;
     cfg.nfs.fs = mfs;
+    cfg.nfs.fd_cache = LRU({
+        dispose: function cache_close_fd(k, v) {
+            mfs.close(v.fd, function on_close(err) {
+                if (err)
+                    log.warn(err, 'failed to close(fd=%d) for %s', v.fd, k);
+            });
+        },
+        max: cfg.nfs.fd_cache.max,
+        maxAge: cfg.nfs.fd_cache.ttl * 1000 // 1m TTL
+    });
+
     cfg.nfs.cachepath = cfg.database.location;    // used by fsstat
 
     var mntmapping = {
