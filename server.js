@@ -321,8 +321,10 @@ function run_servers(log, cfg_mount, cfg_nfs) {
         log.fatal(err, 'unable to initialize mantafs cache');
         process.exit(1);
     });
+    // the portmapper needs to listen on all addresses, unlike our mountd and
+    // nfsd which only listen on localhost by default for some basic security
     mfs.once('ready', function () {
-        cfg.portmap.host = cfg.portmap.host || '127.0.0.1';
+        cfg.portmap.host = cfg.portmap.host || '0.0.0.0';
         cfg.portmap.port = cfg.portmap.port || 111;
 
         // Use the system's portmapper
