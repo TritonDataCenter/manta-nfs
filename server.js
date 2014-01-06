@@ -1,4 +1,4 @@
-// Copyright 2013 Joyent, Inc.  All rights reserved.
+// Copyright 2014 Joyent, Inc.  All rights reserved.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -133,10 +133,12 @@ function configure() {
 
     if (cfg.portmap) {
         assert.object(cfg.portmap, 'config.portmap');
-        // normally only need to define this section if setting
-        // 'usehost': 1
-        // so that we use the system's portmapper, although you could override
-        // the prognum/vers/port for testing
+        // Normally only need to define this section if setting
+        //     'usehost': 1
+        // so that we always use the system's portmapper, or
+        //     'host': {IP addr}
+        // so that we listen on an IP address other than the loopback.
+        // You can also override the prognum/vers/port for testing
     } else {
         cfg.portmap = {
             'port': 111,
@@ -168,18 +170,19 @@ function configure() {
         };
     }
 
-    if (cfg.mount) {
-        assert.object(cfg.mount, 'config.mount');
-        // normally only need to define this if you want to query the mountd to
-        // see exports. If defined, mounts are restricted to these paths. e.g.
-        //     'exports': {
-        //        '/user/public/foo': {},
-        //        '/user/stor': {}
-        //     }
-    } else {
-        cfg.mount = {};
-    }
+    // Can set 'host' to enable the mountd server to listen on an IP address
+    // other than the loopback.
+    // You can also define this if you want to query the mountd to
+    // see exports. If defined, mounts are restricted to these paths. e.g.
+    //     'exports': {
+    //        '/user/public/foo': {},
+    //        '/user/stor': {}
+    //     }
+    cfg.mount = cfg.mount || {};
+    assert.object(cfg.mount, 'config.mount');
 
+    // Can set 'host' to enable the nfs server to listen on an IP address
+    // other than the loopback.
     cfg.nfs = cfg.nfs || {};
     assert.object(cfg.nfs, 'config.nfs');
     cfg.nfs.fd_cache = cfg.nfs.fd_cache || {
@@ -230,12 +233,12 @@ function run_servers(log, cfg_mount, cfg_nfs) {
 
     barrier.start('mount');
     mountd.listen(cfg_mount.port || 1892,
-                  cfg_mount.host || '0.0.0.0',
+                  cfg_mount.host || '127.0.0.1',
                   barrier.done.bind(barrier, 'mount'));
 
     barrier.start('nfs');
     nfsd.listen(cfg_nfs.port || 2049,
-                cfg_nfs.host || '0.0.0.0',
+                cfg_nfs.host || '127.0.0.1',
                 barrier.done.bind(barrier, 'nfs'));
 }
 
@@ -319,7 +322,7 @@ function run_servers(log, cfg_mount, cfg_nfs) {
         process.exit(1);
     });
     mfs.once('ready', function () {
-        cfg.portmap.host = cfg.portmap.host || '0.0.0.0';
+        cfg.portmap.host = cfg.portmap.host || '127.0.0.1';
         cfg.portmap.port = cfg.portmap.port || 111;
 
         // Use the system's portmapper
