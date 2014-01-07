@@ -25,6 +25,7 @@ var app = require('./lib');
 // uid/gid for 'nobody' on non-windows systems
 var uid = 0;
 var gid = 0;
+var os_platform;
 
 ///--- Globals
 
@@ -239,6 +240,11 @@ function run_servers(log, cfg_mount, cfg_nfs) {
             // On non-windows machines we run as 'nobody'.
             // On sunos we have to wait until after we're listening on the nfs
             // port since the user 'nobody' will not have the sys_nfs priv.
+            // On darwin 'nobody' is -2 and we error setting the uid/gid to a
+            // negative number, so use the symbolic name.
+            if (os_platform === 'darwin') {
+                gid = uid = 'nobody';
+            }
             step_down();
         }
     });
@@ -254,20 +260,31 @@ function run_servers(log, cfg_mount, cfg_nfs) {
                 barrier.done.bind(barrier, 'nfs'));
 }
 
+// Darwin uses negative numbers for 'nobody' but these get pulled out as a
+// large non-negative number. Convert to twos-complement.
+function convert_neg_id(id)
+{
+    if (id > 0x7fffffff)
+        return (-(~id + 1));
+    else
+        return (id);
+}
+
 ///--- Mainline
 
 (function main() {
     var cfg = configure();
     var log = cfg.log;
 
-    if (os.platform() !== 'win32') {
-        uid = userid.uid('nobody');
+    os_platform = os.platform();
+    if (os_platform !== 'win32') {
+        uid = convert_neg_id(userid.uid('nobody'));
         try {
-            gid = userid.gid('nobody');
+            gid = convert_neg_id(userid.gid('nobody'));
         } catch (e1) {
             // Linux uses 'nogroup' instead of 'nobody'
             try {
-                gid = userid.gid('nogroup');
+                gid = convert_neg_id(userid.gid('nogroup'));
             } catch (e2) {
                 gid = uid;
             }
