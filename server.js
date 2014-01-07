@@ -359,8 +359,9 @@ function run_servers(log, cfg_mount, cfg_nfs) {
             fs.chownSync(path.join(mfs.path, 'manta.db'), uid, gid);
         }
 
-        // the portmapper needs to listen on all addresses, unlike our mountd and
-        // nfsd which only listen on localhost by default for some basic security
+        // the portmapper needs to listen on all addresses, unlike our mountd
+        // and nfsd which only listen on localhost by default for some basic
+        // security
         cfg.portmap.host = cfg.portmap.host || '0.0.0.0';
         cfg.portmap.port = cfg.portmap.port || 111;
 
