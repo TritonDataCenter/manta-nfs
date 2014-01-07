@@ -5,9 +5,11 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 var fs = require('fs');
+var os = require('os');
 var path = require('path');
 var util = require('util');
 
+var userid = require('userid');
 var assert = require('assert-plus');
 var bunyan = require('bunyan');
 var clone = require('clone');
@@ -20,7 +22,9 @@ var vasync = require('vasync');
 
 var app = require('./lib');
 
-
+// uid/gid for 'nobody' on non-windows systems
+var uid = 0;
+var gid = 0;
 
 ///--- Globals
 
@@ -206,8 +210,9 @@ function configure() {
 
 function step_down() {
     try {
-        process.setgid('nobody');
-        process.setuid('nobody');
+        process.setgid(gid);
+        process.setuid(uid);
+        LOG.info('server now running as \'nobody\'');
     } catch (e) {
         LOG.fatal(e, 'unable to setuid/setgid to nobody');
         process.exit(1);
@@ -229,6 +234,13 @@ function run_servers(log, cfg_mount, cfg_nfs) {
                  ma.address, ma.port);
         log.info('nfsd: listening on: tcp://%s:%d',
                  na.address, na.port);
+
+        if (uid !== 0) {
+            // On non-windows machines we run as 'nobody'.
+            // On sunos we have to wait until after we're listening on the nfs
+            // port since the user 'nobody' will not have the sys_nfs priv.
+            step_down();
+        }
     });
 
     barrier.start('mount');
@@ -247,6 +259,20 @@ function run_servers(log, cfg_mount, cfg_nfs) {
 (function main() {
     var cfg = configure();
     var log = cfg.log;
+
+    if (os.platform() !== 'win32') {
+        uid = userid.uid('nobody');
+        try {
+            gid = userid.gid('nobody');
+        } catch (e1) {
+            // Linux uses 'nogroup' instead of 'nobody'
+            try {
+                gid = userid.gid('nogroup');
+            } catch (e2) {
+                gid = uid;
+            }
+        }
+    }
 
     var mfs = mantafs.createClient({
         files: cfg.database.max_files,
@@ -321,9 +347,20 @@ function run_servers(log, cfg_mount, cfg_nfs) {
         log.fatal(err, 'unable to initialize mantafs cache');
         process.exit(1);
     });
-    // the portmapper needs to listen on all addresses, unlike our mountd and
-    // nfsd which only listen on localhost by default for some basic security
     mfs.once('ready', function () {
+        // Cache exists now, ensure cache dir modes are more secure
+        fs.chmodSync(mfs.path, 0700);
+        fs.chmodSync(path.join(mfs.path, 'fscache'), 0700);
+        fs.chmodSync(path.join(mfs.path, 'manta.db'), 0600);
+        if (uid !== 0) {
+            // On non-windows machines we run as 'nobody'. Tighten up now.
+            fs.chownSync(mfs.path, uid, gid);
+            fs.chownSync(path.join(mfs.path, 'fscache'), uid, gid);
+            fs.chownSync(path.join(mfs.path, 'manta.db'), uid, gid);
+        }
+
+        // the portmapper needs to listen on all addresses, unlike our mountd and
+        // nfsd which only listen on localhost by default for some basic security
         cfg.portmap.host = cfg.portmap.host || '0.0.0.0';
         cfg.portmap.port = cfg.portmap.port || 111;
 
@@ -371,11 +408,6 @@ function run_servers(log, cfg_mount, cfg_nfs) {
             });
 
             pmapd.listen(cfg.portmap.port, cfg.portmap.host, function () {
-                // XXX Before we step_down make sure the cache dir is writeable
-                // with the lower privs. Who should own the cache and what
-                // should the mode be for proper security.
-                // step_down();
-
                 run_servers(cfg.log, cfg.mount, cfg.nfs);
             });
        }
