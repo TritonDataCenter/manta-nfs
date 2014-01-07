@@ -187,7 +187,9 @@ function configure() {
     assert.object(cfg.mount, 'config.mount');
 
     // Can set 'host' to enable the nfs server to listen on an IP address
-    // other than the loopback.
+    // other than the loopback. Can set uid and gid to specify the uid/gid for
+    // 'nobody' on the client. If not provided, the server's values for 'nobody'
+    // will be used.
     cfg.nfs = cfg.nfs || {};
     assert.object(cfg.nfs, 'config.nfs');
     cfg.nfs.fd_cache = cfg.nfs.fd_cache || {
@@ -297,7 +299,9 @@ function convert_neg_id(id)
         manta: cfg.manta,
         path: cfg.database.location,
         sizeMB: cfg.database.sizeMB,
-        ttl: cfg.database.ttl
+        ttl: cfg.database.ttl,
+        uid: cfg.nfs.uid || uid,
+        gid: cfg.nfs.gid || gid
     });
 
     cfg.mount.fs = mfs;
