@@ -388,8 +388,10 @@ function convert_neg_id(id)
 
         // Use the system's portmapper
         function register_with_pmap() {
-            cfg.portmap.url = util.format('udp://%s:%d',
-                cfg.portmap.host, cfg.portmap.port);
+            // The Linux portmapper normally rejects requests that are not
+            // made to the loopback address.
+            cfg.portmap.url = util.format('udp://127.0.0.1:%d',
+                cfg.portmap.port);
             pmapclient = app.createPortmapClient(cfg.portmap);
 
             pmapclient.once('connect', function () {
