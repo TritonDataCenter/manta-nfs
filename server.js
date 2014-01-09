@@ -141,7 +141,7 @@ function configure() {
         // Normally only need to define this section if setting
         //     'usehost': 1
         // so that we always use the system's portmapper, or
-        //     'host': {IP addr}
+        //     'address': {IP addr}
         // so that we listen on an IP address other than the loopback.
         // You can also override the prognum/vers/port for testing
     } else {
@@ -175,8 +175,18 @@ function configure() {
         };
     }
 
-    // Can set 'host' to enable the mountd server to listen on an IP address
+    // Can set 'address' to enable the mountd server to listen on an IP address
     // other than the loopback.
+    // Can define hosts_allow and hosts_deny to list the addresses of hosts
+    // which can/cannot mount. e.g.
+    //     'hosts_allow': {
+    //        '192.168.0.10': {},
+    //        '192.168.0.11': {}
+    //     },
+    //     'hosts_deny': {
+    //        '192.168.0.12': {},
+    //        '192.168.0.13': {}
+    //     }
     // You can also define this if you want to query the mountd to
     // see exports. If defined, mounts are restricted to these paths. e.g.
     //     'exports': {
@@ -186,7 +196,7 @@ function configure() {
     cfg.mount = cfg.mount || {};
     assert.object(cfg.mount, 'config.mount');
 
-    // Can set 'host' to enable the nfs server to listen on an IP address
+    // Can set 'address' to enable the nfs server to listen on an IP address
     // other than the loopback. Can set uid and gid to specify the uid/gid for
     // 'nobody' on the client. If not provided, the server's values for 'nobody'
     // will be used.
@@ -271,12 +281,12 @@ function run_servers(log, cfg_mount, cfg_nfs) {
 
     barrier.start('mount');
     mountd.listen(cfg_mount.port || 1892,
-                  cfg_mount.host || '127.0.0.1',
+                  cfg_mount.address || '127.0.0.1',
                   barrier.done.bind(barrier, 'mount'));
 
     barrier.start('nfs');
     nfsd.listen(cfg_nfs.port || 2049,
-                cfg_nfs.host || '127.0.0.1',
+                cfg_nfs.address || '127.0.0.1',
                 barrier.done.bind(barrier, 'nfs'));
 }
 
@@ -401,7 +411,7 @@ function convert_neg_id(id)
         // the portmapper needs to listen on all addresses, unlike our mountd
         // and nfsd which only listen on localhost by default for some basic
         // security
-        cfg.portmap.host = cfg.portmap.host || '0.0.0.0';
+        cfg.portmap.address = cfg.portmap.address || '0.0.0.0';
         cfg.portmap.port = cfg.portmap.port || 111;
 
         // Use the system's portmapper
@@ -450,7 +460,7 @@ function convert_neg_id(id)
                 }
             });
 
-            pmapd.listen(cfg.portmap.port, cfg.portmap.host, function () {
+            pmapd.listen(cfg.portmap.port, cfg.portmap.address, function () {
                 run_servers(cfg.log, cfg.mount, cfg.nfs);
             });
        }
