@@ -251,6 +251,24 @@ function run_servers(log, cfg_mount, cfg_nfs) {
         }
     });
 
+    mountd.on('error', function (e) {
+        if (e.code == 'EADDRINUSE') {
+            log.fatal('mountd already running, exiting.');
+        } else {
+            log.fatal(e, 'unable to run the mountd');
+        }
+        process.exit(1);
+    });
+
+    nfsd.on('error', function (e) {
+        if (e.code == 'EADDRINUSE') {
+            log.fatal('nfsd already running, exiting.');
+        } else {
+            log.fatal(e, 'unable to run the nfsd');
+        }
+        process.exit(1);
+    });
+
     barrier.start('mount');
     mountd.listen(cfg_mount.port || 1892,
                   cfg_mount.host || '127.0.0.1',
@@ -423,7 +441,7 @@ function convert_neg_id(id)
 
             pmapd.on('error', function (e) {
                 if (e.code == 'EADDRINUSE') {
-                    log.info('Portmapper address in use, registering...');
+                    log.info('Portmapper running, registering there...');
                     cfg.portmap.usehost = 1;
                     register_with_pmap();
                 } else {
