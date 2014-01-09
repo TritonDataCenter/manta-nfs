@@ -424,6 +424,7 @@ function convert_neg_id(id)
             pmapd.on('error', function (e) {
                 if (e.code == 'EADDRINUSE') {
                     log.info('Portmapper address in use, registering...');
+                    cfg.portmap.usehost = 1;
                     register_with_pmap();
                 } else {
                     log.fatal(e, 'unable to run the portmapper');
