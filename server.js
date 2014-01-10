@@ -358,8 +358,7 @@ function convert_neg_id(id)
     };
     var pmapclient;
 
-    process.on('SIGINT', function () {
-        log.info('Got SIGINT, shutting down.');
+    function cleanup() {
         mfs.shutdown(function (err) {
             if (err) {
                 log.warn(err, 'mantafs shutdown error');
@@ -386,6 +385,16 @@ function convert_neg_id(id)
                 process.exit(0);
             }
         });
+    }
+
+    process.on('SIGTERM', function () {
+        log.info('Got SIGTERM, shutting down.');
+        cleanup();
+    });
+
+    process.on('SIGINT', function () {
+        log.info('Got SIGINT, shutting down.');
+        cleanup();
     });
 
     mfs.once('error', function (err) {
