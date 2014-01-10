@@ -138,13 +138,10 @@ function configure() {
 
     if (cfg.portmap) {
         assert.object(cfg.portmap, 'config.portmap');
-        // Normally only need to define this section if setting
+        // Normally only define this section if setting
         //     'usehost': 1
-        // so that we always use the system's portmapper, or
-        //     'address': {IP addr}
-        // so that we listen on an IP address other than the loopback.
-        // You can also override the prognum/vers/port for testing
     } else {
+        // our built-in portmapper just hardcodes the standard info
         cfg.portmap = {
             'port': 111,
             'mappings': {
@@ -187,19 +184,17 @@ function configure() {
     //        '192.168.0.12': {},
     //        '192.168.0.13': {}
     //     }
-    // You can also define this if you want to query the mountd to
-    // see exports. If defined, mounts are restricted to these paths. e.g.
+    // Can set exports if you want to limit what parts of the manta namespace
+    // can be mounted:
     //     'exports': {
-    //        '/user/public/foo': {},
-    //        '/user/stor': {}
+    //        '/user/stor/project': {},
+    //        '/user/public': {}
     //     }
     cfg.mount = cfg.mount || {};
     assert.object(cfg.mount, 'config.mount');
 
-    // Can set 'address' to enable the nfs server to listen on an IP address
-    // other than the loopback. Can set uid and gid to specify the uid/gid for
-    // 'nobody' on the client. If not provided, the server's values for 'nobody'
-    // will be used.
+    // Can set uid and gid to specify the uid/gid for 'nobody' on the client.
+    // If not provided, the server's values for 'nobody' will be used.
     cfg.nfs = cfg.nfs || {};
     assert.object(cfg.nfs, 'config.nfs');
     cfg.nfs.fd_cache = cfg.nfs.fd_cache || {
@@ -284,9 +279,10 @@ function run_servers(log, cfg_mount, cfg_nfs) {
                   cfg_mount.address || '127.0.0.1',
                   barrier.done.bind(barrier, 'mount'));
 
+    // nfsd needs to listen on the same IP as configured for the mountd
     barrier.start('nfs');
     nfsd.listen(cfg_nfs.port || 2049,
-                cfg_nfs.address || '127.0.0.1',
+                cfg_mount.address || '127.0.0.1',
                 barrier.done.bind(barrier, 'nfs'));
 }
 
