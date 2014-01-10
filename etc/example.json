@@ -5,7 +5,7 @@
         "keyId": "70:c0:50:d6:9e:1f:0c:74:04:8b:08:c9:12:a2:7c:9f",
         "url": "https://us-east.manta.joyent.com",
         "user": "foo.bar"
-    }
+    },
     "database": {
         "_comment": "the default DB is under /var/tmp/mfsdb, also tunables",
         "location": "/var/mantanfs",
