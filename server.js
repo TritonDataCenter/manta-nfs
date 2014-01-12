@@ -201,6 +201,8 @@ function configure() {
         max: 10000,
         ttl: 60
     };
+    cfg.nfs.hosts_allow = cfg.mount.hosts_allow;
+    cfg.nfs.hosts_deny = cfg.mount.hosts_deny;
 
     cfg.log = LOG;
     cfg.manta.log = LOG;
