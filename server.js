@@ -358,7 +358,6 @@ function convert_neg_id(id)
         prot: 6,
         port: 2049
     };
-    var pmapclient;
 
     function cleanup() {
         mfs.shutdown(function (err) {
@@ -367,19 +366,23 @@ function convert_neg_id(id)
             }
 
             if (cfg.portmap.usehost) {
-                pmapclient.unset(mntmapping, function (err1) {
-                    if (err1) {
-                        log.warn(err1,
-                            'unable to unregister mountd from the portmapper');
-                    }
+                var pmapclient = app.createPortmapClient(cfg.portmap);
 
-                    pmapclient.unset(nfsmapping, function (err2) {
-                        if (err2) {
-                            log.warn(err2,
-                            'unable to unregister nfsd from the portmapper');
+                pmapclient.once('connect', function () {
+                    pmapclient.unset(mntmapping, function (err1) {
+                        if (err1) {
+                            log.warn(err1,
+                                'unregistering mountd from the portmapper');
                         }
-                        log.info('Shutdown complete, exiting.');
-                        process.exit(0);
+
+                        pmapclient.unset(nfsmapping, function (err2) {
+                            if (err2) {
+                                log.warn(err2,
+                                    'unregistering nfsd from the portmapper');
+                            }
+                            log.info('Shutdown complete, exiting.');
+                            process.exit(0);
+                        });
                     });
                 });
             } else {
@@ -427,7 +430,7 @@ function convert_neg_id(id)
             // made to the loopback address.
             cfg.portmap.url = util.format('udp://127.0.0.1:%d',
                 cfg.portmap.port);
-            pmapclient = app.createPortmapClient(cfg.portmap);
+            var pmapclient = app.createPortmapClient(cfg.portmap);
 
             pmapclient.once('connect', function () {
                 pmapclient.set(mntmapping, function (err1) {
@@ -444,6 +447,7 @@ function convert_neg_id(id)
                             process.exit(1);
                         }
 
+                        pmapclient.close();
                         run_servers(cfg.log, cfg.mount, cfg.nfs);
                     });
                 });
