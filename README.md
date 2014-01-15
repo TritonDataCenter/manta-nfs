@@ -14,8 +14,9 @@ The server cannot run on a system which is already acting as a NFS server
 since there would be a conflict on the required ports.
 In this case, the server will detect the existing server and exit.
 
-The server includes a built-in portmapper but it will also work transparently
-with the system's portmapper (usually rpcbind) if one is running.
+The server includes a built-in portmapper but it will also interoperate
+transparently with the system's portmapper (usually rpcbind) if one is running.
+The server also includes a built-in mountd and nfsd.
 
 By default, the server will only listen on the localhost address and only
 serve files locally. However, it can be configured to serve files to
@@ -23,7 +24,7 @@ external hosts.
 
 Because the server caches Manta objects locally, care must be taken when
 accessing Manta in different ways or from different locations. There is no
-attempt to be coherent accross multiple systems. Given this, you should
+attempt to be coherent across multiple systems. Given this, you should
 not run more than one instance of the server for the same Manta user. Likewise,
 you should not write to the same object using both NFS and the CLI. Reading
 objects using both NFS and the CLI is obviously fine. If you write an object
@@ -73,11 +74,11 @@ here is some additional information.
     addresses. The `exports` section can also be used to restrict access to
     the specified portions of the Manta filesystem.
 
-  * The `nfs` section can be used set the `uid` and `gid` values for 'nobody'.
-    This is useful if NFS clients are running a different OS which uses
-    different values for 'nobody' as compared to the server (e.g. Darwin vs.
-    Linux). Over NFS all files will appear to be owned by 'nobody' since there
-    is no mechanism to map a Manta username to a local uid on the various
+  * The `nfs` section can be used to set the `uid` and `gid` values for
+    'nobody'. This is useful if NFS clients are running a different OS, which
+    uses different values for 'nobody', as compared to the server (e.g. Darwin
+    vs.  Linux). Over NFS all files will appear to be owned by 'nobody' since
+    there is no mechanism to map a Manta username to a local uid on the various
     clients, but within Manta all files continue to be owned by the user
     account. The `fd-cache` section can be used to configure the server's file
     descriptor cache, although this is normally not necessary.
