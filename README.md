@@ -12,18 +12,18 @@ of a local object cache.
 
 The server cannot run on a system which is already acting as a NFS server
 since there would be a conflict on the required ports.
-In the case, the server will detect the existing server and exit.
+In this case, the server will detect the existing server and exit.
 
 The server includes a built-in portmapper but it will also work transparently
 with the system's portmapper (usually rpcbind) if one is running.
 
 By default, the server will only listen on the localhost address and only
-serve files locally, however, it can be configured to serve files to
+serve files locally. However, it can be configured to serve files to
 external hosts.
 
 Because the server caches Manta objects locally, care must be taken when
 accessing Manta in different ways or from different locations. There is no
-attempt to be coherent accross multiple systems. Given this, you shuld
+attempt to be coherent accross multiple systems. Given this, you should
 not run more than one instance of the server for the same Manta user. Likewise,
 you should not write to the same object using both NFS and the CLI. Reading
 objects using both NFS and the CLI is obviously fine. If you write an object
@@ -86,7 +86,7 @@ here is some additional information.
 
 As mentioned, the server must be started as root, since it needs access
 to the portmapper's privileged port, but once the server is running, it
-changes it ownership to 'nobody' to improve security.
+lowers its uid to 'nobody' to improve security.
 
 On Darwin or Linux, the server can be run like:
 
@@ -137,7 +137,7 @@ to workaround this:
 
   * Run the system's rpcbind in 'insecure' mode using the -i option. Again,
     the location for specifying additional options for a service varies by
-    distribution. On Ubuntu you can add the option to
+    distribution. On Ubuntu you can add the option in
     `/etc/init/portmap.conf`.
 
 On Linux the uid/gid for 'nobody' is 65534.
