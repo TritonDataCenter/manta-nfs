@@ -3,7 +3,7 @@
 `manta-nfs` implements a [NFS vers. 3](http://tools.ietf.org/html/rfc1813)
 server which uses
 [Joyent Manta](http://www.joyent.com/products/manta) as the backing store.
-The server implements all NFS functionality, although some operations,
+The server implements all NFS functionality, although some commands,
 such as 'chmod', will have no effect since Manta does not support them.
 Unlike Manta, the server provides normal POSIX write semantics via the use
 of a local object cache.
@@ -38,13 +38,10 @@ simply 'touch'ing the file.
 ## Configuration
 
 At a minimum the server needs the configuration information necessary to
-connect to a Manta account. If the Manta environment variables are already
-in place, the server will use those. Since the server must be started as
-root and if you're using 'sudo', use the '-E' option to pass those forward.
-On some Linux distributions sudo will reset 'HOME' to root's home directory. On
-those distributions you must also set HOME back to your home directory. e.g.
-
-    sudo -E HOME=/home/foo ...
+connect to a Manta account. If the Manta
+[environment variables](http://apidocs.joyent.com/manta/#setting-up-your-environment)
+are already setup, the server will use those and no other configuration is
+needed.
 
 In addition to the Manta account information, there is a variety of other
 configuration options. An example configuration file is provided in
@@ -57,7 +54,9 @@ Although most of the sections in the config file should be self-explanatory,
 here is some additional information.
 
   * The `manta` section must be used to specify the required access information
-    for Manta if the environment variables are not set.
+    for Manta if the environment variables are not set. The configuration
+    information takes precedence over the environment variables if both are
+    set.
 
   * The `database` section can be used to configure where the server will cache
     local copies of the Manta objects. The location, size of the cache and the
@@ -85,21 +84,43 @@ here is some additional information.
 
 ## Usage
 
-As mentioned, the server must be started as root, since it needs access
-to the portmapper's privileged port, but once the server is running, it
-lowers its uid to 'nobody' to improve security.
+When running the server for the first time, you probably want to run it by
+hand to confirm that the configuration is correct and things are working as
+expected.
+
+The server must be started as root, since it needs access to the portmapper's
+privileged port, but once the server is running, it lowers its uid to 'nobody'
+to improve security. The 'sudo' or 'pfexec' commands are typically used to run
+a command as root, depending on which OS you're using.
+
+If you're using the Manta environment variables as the source of your Manta
+account information, and if you're using 'sudo', use the '-E' option to pass
+those forward. On some Linux distributions sudo will reset 'HOME' to root's
+home directory. On those distributions you must also set HOME back to your home
+directory.
 
 On Darwin or Linux, the server can be run like:
 
-    sudo node server.js -f etc/myconfig.json
+    sudo -E HOME=/home/foo node server.js
 
 On SmartOS, the server can be run like:
 
-    pfexec node server.js -f etc/myconfig.json
+    pfexec node server.js
+
+To pass in a config file, use the -f option:
+
+    sudo node server.js -f etc/myconfig.json
 
 Once started, the server will output an occasional log message but the '-d'
 or '-v' option can be used to change the logging level from 'info' to 'debug'
-or 'trace'. All logging is done via Bunyan.
+or 'trace'. All logging is done via Bunyan. Logging above 'info' is not
+recommended, except for debugging, since there will be many log entries for
+each NFS operation.
+
+Once you have confirmed that the server works as expected, you will probably
+want to setup a service in your OS so that the server runs automatically
+when the system boots. Setting up a service like this is OS-specific and is
+disccused in the following section.
 
 ## OS Specific Considerations
 
