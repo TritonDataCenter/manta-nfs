@@ -1,0 +1,69 @@
+#!/bin/sh
+#
+# mantanfs      This shell script takes care of starting and stopping
+#               the Manta NFS service.
+
+### BEGIN INIT INFO
+# Provides: mantanfs
+# Default-Start: 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Start up the Manta NFS server
+# Description: NFS is a popular protocol for file sharing across \
+#          networks. This service provides NFS service with Manta \
+#          as the backing store.
+### END INIT INFO
+
+NODE="/usr/bin/node"
+SERVER="/usr/local/bin/server.js"
+CONFIG="/usr/local/etc/manta-nfs.json"
+
+uid=`id | cut -d\( -f1 | cut -d= -f2`
+RETVAL=0
+
+start() {
+	[ -x $NODE ] || exit 5
+	[ -e $SERVER ] || exit 5
+	[ -e $CONFIG ] || exit 5
+
+	# Only root can start the service
+	[ $uid -ne 0 ] && exit 4
+
+	# Make sure the server is not already running.
+	if pgrep -f 'node.*server.js' > /dev/null ; then
+		exit 0
+	fi
+
+	echo -n $"Starting Manta NFS server: "
+	$NODE $SERVER -f $CONFIG >/var/log/mantanfs.log 2>&1 &
+	RETVAL=$?
+	echo
+	return $RETVAL
+}
+
+stop() {
+	# Only root can stop the service
+	[ $uid -ne 0 ] && exit 4
+
+	echo -n $"Stopping Manta NFS server: "
+	pkill -f 'node.*server.js'
+	RETVAL=$?
+	echo
+	return $RETVAL
+}
+
+# See how we were called.
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop}"
+        RETVAL=2
+        ;;
+esac
+
+exit $RETVAL
+

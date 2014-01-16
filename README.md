@@ -117,6 +117,11 @@ or 'trace'. All logging is done via Bunyan. Logging above 'info' is not
 recommended, except for debugging, since there will be many log entries for
 each NFS operation.
 
+To mount a Manta directory, the standard NFS client mount command is used.
+For example, for Manta user 'foo', to mount their 'public' directory:
+
+    mount 127.0.0.1:/foo/public /mnt
+
 Once you have confirmed that the server works as expected, you will probably
 want to setup a service in your OS so that the server runs automatically
 when the system boots. Setting up a service like this is OS-specific and is
@@ -159,8 +164,11 @@ to workaround this:
 
   * Run the system's rpcbind in 'insecure' mode using the -i option. Again,
     the location for specifying additional options for a service varies by
-    distribution. On Ubuntu you can add the option in
-    `/etc/init/portmap.conf`.
+    distribution. On systems using 'upstart' you can add the option in
+    `/etc/init/portmap.conf`. On systems using 'systemd' you can add the
+    option in `/etc/sysconfig/rpcbind`. On systems which use traditional
+    rc files you must edit `/etc/init.d/rpcbind` and add the option to the
+    invocation of rpcbind in the script.
 
 On Linux the uid/gid for 'nobody' is 65534.
 
@@ -168,6 +176,68 @@ There is no lock manager included in the server, so you must disable locking
 when you mount. e.g.
 
     mount -o nolock 127.0.0.1:/foo.bar/public /home/foo/mnt
+
+To setup the server as a service, so that it runs automatically when the
+system boots, you need to hook into the system's service manager. Linux offers
+a variety of dfferent service managers, depending upon the distribution.
+
+#### rc files
+
+The traditional Unix rc file mechanism is not really a service manager but
+it does provide a way to start or stop services when the system is booting
+or shutting down.
+
+The `svc/rc/mantanfs` file is a shell script which will start up the server.
+Make a copy of this file into `/etc/init.d`. If necessary, edit the file and
+provide the correct paths to 'node', 'server.js' and your configuration file.
+
+Symlink the following names to the 'mantanfs' file:
+
+    ln -s /etc/rc3.d/S90mantanfs -> ../init.d/mantanfs
+    ln -s /etc/rc4.d/S90mantanfs -> ../init.d/mantanfs
+    ln -s /etc/rc5.d/S90mantanfs -> ../init.d/mantanfs
+    ln -s /etc/rc0.d/K90mantanfs -> ../init.d/mantanfs
+    ln -s /etc/rc1.d/K90mantanfs -> ../init.d/mantanfs
+    ln -s /etc/rc2.d/K90mantanfs -> ../init.d/mantanfs
+    ln -s /etc/rc6.d/K90mantanfs -> ../init.d/mantanfs
+
+The script directs the server log to '/var/log/mantanfs.log'.
+
+#### Systemd
+
+See the [wiki](https://fedoraproject.org/wiki/Systemd) for more details
+on configuring and using systemd.  Also see the `systemd.unit(5)` and
+`systemd.service(5)` man pages.
+
+The `svc/systemd/mantanfs.service` file provides an example configuration for
+systemd. Make a copy of this file into /lib/systemd/system. If necessary, edit
+the file and provide the correct paths to 'node', 'server.js' and your
+configuration file.
+
+Run the following to start the service:
+
+    systemctl start mantanfs.service
+
+Since systemd has its own logging, you must use the 'journalctl' command to
+look at the logs.
+
+    journalctl _SYSTEMD_UNIT=mantanfs.service
+
+#### Upstart
+
+See the [cookbook](http://upstart.ubuntu.com/cookbook/) for more details
+on configuring and using upstart.
+
+The `svc/upstart/mantanfs.conf` file provides an example configuration for
+upstart. Make a copy of this file into /etc/init. If necessary, edit the file
+and provide the correct paths to 'node', 'server.js' and your configuration
+file.
+
+Run the following to start the service:
+
+    initctl start mantanfs
+
+The server log should be available as '/var/log/upstart/mantanfs.log'.
 
 ### SmartOS
 
@@ -187,3 +257,7 @@ You will either need to run on a fixed platform or fixed versions of the
 NFS mount and umount programs can be provided for interim relief.
 
 On SmartOS the uid/gid for 'nobody' is 60001.
+
+To setup a SMF service for the server, run
+
+    svccfg -v import manta-nfs.xml

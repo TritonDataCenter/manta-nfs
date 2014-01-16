@@ -1,0 +1,11 @@
+[Unit]
+Description=Manta NFS service
+After=network.target
+ConditionFileIsExecutable=/usr/bin/node
+ConditionPathExists=/usr/local/bin/server.js
+ConditionPathExists=/usr/local/etc/manta-nfs.json
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/node /usr/local/bin/server.js -f /usr/local/etc/manta-nfs.json
+Restart=on-failure
