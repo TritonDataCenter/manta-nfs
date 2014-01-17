@@ -114,11 +114,13 @@ To pass in a config file, use the -f option:
 Once started, the server will output an occasional log message but the '-d'
 or '-v' option can be used to change the logging level from 'info' to 'debug'
 or 'trace'. All logging is done via Bunyan. Logging above 'info' is not
-recommended, except for debugging, since there will be many log entries for
+recommended, except during debugging, since there will be many log entries for
 each NFS operation.
 
-To mount a Manta directory, the standard NFS client mount command is used.
-For example, for Manta user 'foo', to mount their 'public' directory:
+To mount a Manta directory, the standard NFS client mount command is used with
+a Manta path. The user name used here must be the same user as is configured
+for Manta access. For example, if Manta user 'foo' is configured, then to
+mount their 'public' directory:
 
     mount 127.0.0.1:/foo/public /mnt
 
