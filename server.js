@@ -408,14 +408,14 @@ function convert_neg_id(id)
     });
     mfs.once('ready', function () {
         // Cache exists now, ensure cache dir modes are more secure
-        fs.chmodSync(mfs.path, 0700);
-        fs.chmodSync(path.join(mfs.path, 'fscache'), 0700);
-        fs.chmodSync(path.join(mfs.path, 'manta.db'), 0600);
+        fs.chmodSync(mfs.cache.location, 0700);
+        fs.chmodSync(path.join(mfs.cache.location, 'fscache'), 0700);
+        fs.chmodSync(path.join(mfs.cache.location, 'mantafs.db'), 0600);
         if (uid !== 0) {
             // On non-windows machines we run as 'nobody'. Tighten up now.
-            fs.chownSync(mfs.path, uid, gid);
-            fs.chownSync(path.join(mfs.path, 'fscache'), uid, gid);
-            fs.chownSync(path.join(mfs.path, 'manta.db'), uid, gid);
+            fs.chownSync(mfs.cache.location, uid, gid);
+            fs.chownSync(path.join(mfs.cache.location, 'fscache'), uid, gid);
+            fs.chownSync(path.join(mfs.cache.location, 'mantafs.db'), uid, gid);
         }
 
         // the portmapper needs to listen on all addresses, unlike our mountd
