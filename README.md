@@ -205,7 +205,7 @@ The script directs the server log to '/var/log/mantanfs.log'.
 
 #### Systemd
 
-See the [wiki](https://fedoraproject.org/wiki/Systemd) for more details
+See this [wiki](https://fedoraproject.org/wiki/Systemd) for more details
 on configuring and using systemd.  Also see the `systemd.unit(5)` and
 `systemd.service(5)` man pages.
 
@@ -225,7 +225,7 @@ look at the logs.
 
 #### Upstart
 
-See the [cookbook](http://upstart.ubuntu.com/cookbook/) for more details
+See this [cookbook](http://upstart.ubuntu.com/cookbook/) for more details
 on configuring and using upstart.
 
 The `svc/upstart/mantanfs.conf` file provides an example configuration for
@@ -258,6 +258,10 @@ NFS mount and umount programs can be provided for interim relief.
 
 On SmartOS the uid/gid for 'nobody' is 60001.
 
-To setup a SMF service for the server, run
+The `svc/smf/manta-nfs.xml` file provides an example configuration for
+smf(5). If necessary, edit the file and provide the correct paths to 'node',
+'server.js' and your configuration file.
 
-    svccfg -v import manta-nfs.xml
+Run the following to load and start the service:
+
+    svccfg -v import svc/smf/manta-nfs.xml
