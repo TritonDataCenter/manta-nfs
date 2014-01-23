@@ -130,9 +130,9 @@ function configure() {
         // default local cache config
         cfg.database = {
             location: '/var/tmp/mfsdb',
-            max_files: 65535,
             sizeMB: 1024,
-            ttl: 3600
+            ttl: 3600,
+            wbtime: 60
         };
     }
 
@@ -320,12 +320,12 @@ function convert_neg_id(id)
     }
 
     var mfs = mantafs.createClient({
-        files: cfg.database.max_files,
         log: log.child({component: 'MantaFs'}, true),
         manta: cfg.manta,
         path: cfg.database.location,
         sizeMB: cfg.database.sizeMB,
         ttl: cfg.database.ttl,
+        wbtime: cfg.database.wbtime,
         uid: cfg.nfs.uid || uid,
         gid: cfg.nfs.gid || gid
     });

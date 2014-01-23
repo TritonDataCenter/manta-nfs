@@ -7,11 +7,14 @@
         "user": "foo.bar"
     },
     "database": {
-        "_comment": "the default DB is under /var/tmp/mfsdb, also tunables",
+        "_comment": "the default DB and cache is under /var/tmp/mfsdb",
         "location": "/var/mantanfs",
-        "max_files": 100,
+        "_comment2": "how much local disk space to use for caching",
         "sizeMB": 1024,
-        "ttl": 3600
+        "_comment3": "time-to-live in cache before cheking if stale (secs)",
+        "ttl": 3600,
+        "_comment4": "time for dirty file to be cached before writeback (secs)",
+        "wbtime": 60
     },
     "portmap": {
         "_comment": "usehost forces use of the system's portmapper",

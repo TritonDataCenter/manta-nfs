@@ -1,8 +1,0 @@
-{
-    "manta": {
-        "keyFile": "/Users/mcavage/.ssh/id_rsa",
-        "keyId": "7b:c0:5c:d6:9e:11:0c:76:04:4b:03:c9:11:f2:72:7f",
-        "url": "https://us-east.manta.joyent.com",
-        "user": "mark.cavage"
-    }
-}

@@ -59,9 +59,17 @@ here is some additional information.
     set.
 
   * The `database` section can be used to configure where the server will cache
-    local copies of the Manta objects. The location, size of the cache and the
-    time-to-live for the cache must be set if this section is provided.
-    The default cache is under '/var/tmp/mfsdb' with a size limit of 1GB.
+    local copies of the Manta objects. The location, size of the cache, the
+    time-to-live and writeback time for the cache must be set if this section
+    is provided.  The default cache is under '/var/tmp/mfsdb' with a size limit
+    of 1GB of local disk space. The time-to-live is the number of seconds a
+    file will be cached before checking to see if it is stale. The default is
+    one hour (3600 seconds). The writeback time is the number of seconds a
+    dirty file will be cached before being written back to Manta. The default
+    is one minute (60 seconds). If files are updated regularly (e.g. log files)
+    then it might make sense to increase the timeout to reduce writeback
+    traffic, but this also increases the window in which data only exists in
+    the local cache.
 
   * The `mount` section's `address` field can be used to specify an address
     other than localhost for the server to listen on. Using '0.0.0.0' tells the
