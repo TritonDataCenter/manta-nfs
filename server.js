@@ -132,7 +132,8 @@ function configure() {
             location: '/var/tmp/mfsdb',
             sizeMB: 1024,
             ttl: 3600,
-            wbtime: 60
+            wbtime: 60,
+            num_par: 5
         };
     }
 
@@ -326,6 +327,7 @@ function convert_neg_id(id)
         sizeMB: cfg.database.sizeMB,
         ttl: cfg.database.ttl,
         wbtime: cfg.database.wbtime,
+        num_par: cfg.database.num_par,
         uid: cfg.nfs.uid || uid,
         gid: cfg.nfs.gid || gid
     });

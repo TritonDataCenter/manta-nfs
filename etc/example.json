@@ -14,7 +14,9 @@
         "_comment3": "time-to-live in cache before cheking if stale (secs)",
         "ttl": 3600,
         "_comment4": "time for dirty file to be cached before writeback (secs)",
-        "wbtime": 60
+        "wbtime": 60,
+        "_comment5": "number of parallel writebacks",
+        "num_par": 5
     },
     "portmap": {
         "_comment": "usehost forces use of the system's portmapper",
