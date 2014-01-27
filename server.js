@@ -306,7 +306,7 @@ function convert_neg_id(id)
     var log = cfg.log;
 
     os_platform = os.platform();
-    if (os_platform !== 'win32') {
+    if (os_platform !== 'win32' && os_platform !== 'darwin') {
         uid = convert_neg_id(userid.uid('nobody'));
         try {
             gid = convert_neg_id(userid.gid('nobody'));
