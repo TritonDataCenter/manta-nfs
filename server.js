@@ -347,6 +347,8 @@ function convert_neg_id(id)
 
     cfg.nfs.cachepath = cfg.database.location;    // used by fsstat
 
+    log.info('configuration: %s', util.inspect(cfg));
+
     var mntmapping = {
         prog: 100005,
         vers: 3,
@@ -413,13 +415,12 @@ function convert_neg_id(id)
         fs.chmodSync(mfs.cache.location, 0700);
         fs.chmodSync(path.join(mfs.cache.location, 'fscache'), 0700);
         fs.chmodSync(path.join(mfs.cache.location, 'mantafs.db'), 0600);
-// XXX JJ fix still problems on mac with -2
-//        if (uid !== 0) {
-//            // On non-windows machines we run as 'nobody'. Tighten up now.
-//            fs.chownSync(mfs.cache.location, uid, gid);
-//            fs.chownSync(path.join(mfs.cache.location, 'fscache'), uid, gid);
-//            fs.chownSync(path.join(mfs.cache.location, 'mantafs.db'), uid, gid);
-//        }
+        if (uid !== 0) {
+            // On non-windows machines we run as 'nobody'. Tighten up now.
+            fs.chownSync(mfs.cache.location, uid, gid);
+            fs.chownSync(path.join(mfs.cache.location, 'fscache'), uid, gid);
+            fs.chownSync(path.join(mfs.cache.location, 'mantafs.db'), uid, gid);
+        }
 
         // the portmapper needs to listen on all addresses, unlike our mountd
         // and nfsd which only listen on localhost by default for some basic
