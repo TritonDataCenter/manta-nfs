@@ -41,17 +41,20 @@ At a minimum the server needs the configuration information necessary to
 connect to a Manta account. If the Manta
 [environment variables](http://apidocs.joyent.com/manta/#setting-up-your-environment)
 are already setup, the server will use those and no other configuration is
-needed.
+needed. The server does not support ssh key forwarding.
 
 In addition to the Manta account information, there is a variety of other
-configuration options. An example configuration file is provided in
-`etc/example.json`. Each section of the configuration file is optional. The
-configuration file is specified to the server via the '-f' option. e.g.
+configuration options. An example configuration file, showing all possible
+configuration options, is provided in `etc/example.json`, although that file
+should not be used to create your personal configuration. A simpler
+`etc/template.json` file is provided as a better starting point for your
+personal configuration. Each section of the configuration file is optional.
+The configuration file is specified to the server via the '-f' option. e.g.
 
     node server.js -f etc/myconfig.json
 
-Although most of the sections in the config file should be self-explanatory,
-here is some additional information.
+Although most of the sections in the example config file should be
+self-explanatory, here is some additional information.
 
   * The `manta` section must be used to specify the required access information
     for Manta if the environment variables are not set. The configuration
