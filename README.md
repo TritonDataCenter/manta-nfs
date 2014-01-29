@@ -278,8 +278,11 @@ platforms. If you see the following, you know your mount code is incorrect.
     nfs mount: 127.0.0.1: : RPC: Program not registered
     nfs mount: retrying: /home/foo.bar/mnt
 
-You will either need to run on a fixed platform or fixed versions of the
-NFS mount and umount programs can be provided for interim relief.
+You will either need to run on a newer platform or you can use this 
+[fixed NFS mount command](http://us-east.manta.joyent.com/jjelinek/public/mount)
+explicitly. e.g.
+
+    pfexec ./mount 127.0.0.1:/foo.bar/public /home/foo/mnt
 
 On SmartOS the uid/gid for 'nobody' is 60001.
 
