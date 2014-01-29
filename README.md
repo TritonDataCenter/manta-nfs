@@ -35,6 +35,13 @@ an existing object using the CLI, the server might have a stale copy in its
 cache. In this case you can force the server to refresh its cached copy by
 simply 'touch'ing the file.
 
+## Getting Started
+
+Clone the repo then run `npm install` within the clone to build all of the
+dependencies. The 'Configuration' section of this readme describes how to
+configure the server before you can run it. The 'Usage' section of this
+readme describes how to start the server and how to perform an NFS mount.
+
 ## Configuration
 
 At a minimum the server needs the configuration information necessary to
@@ -112,7 +119,7 @@ those forward. On some Linux distributions sudo will reset 'HOME' to root's
 home directory. On those distributions you must also set HOME back to your home
 directory.
 
-On Darwin or Linux, the server can be run like:
+On Darwin or Linux, the server can be run with no config file like:
 
     sudo -E HOME=/home/foo node server.js
 
@@ -124,11 +131,14 @@ To pass in a config file, use the -f option:
 
     sudo node server.js -f etc/myconfig.json
 
-Once started, the server will output an occasional log message but the '-d'
-or '-v' option can be used to change the logging level from 'info' to 'debug'
-or 'trace'. All logging is done via Bunyan. Logging above 'info' is not
-recommended, except during debugging, since there will be many log entries for
-each NFS operation.
+All output logging is done via bunyan. Once started, the server will output an
+occasional log message, but the '-d' or '-v' option can be used to change the
+bunyan logging level to either 'debug' or 'trace'. Logging at either of these
+levels is not recommended, except during debugging, since there will be many
+log entries for each NFS operation. You may want to redirect the output from
+the server into a file:
+
+    sudo node server.js -d -f etc/myconfig.json >log 2>&1
 
 To mount a Manta directory, the standard NFS client mount command is used with
 a Manta path. The user name used here must be the same user as is configured
