@@ -146,7 +146,7 @@ a Manta path. The user name used here must be the same user as is configured
 for Manta access. For example, if Manta user 'foo' is configured, then to
 mount their 'public' directory:
 
-    mount 127.0.0.1:/foo/public /mnt
+    sudo mount 127.0.0.1:/foo/public /mnt
 
 Once you have confirmed that the server works as expected, you can setup a
 service on your system so that the server runs automatically when the system
