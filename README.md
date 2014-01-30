@@ -106,7 +106,8 @@ self-explanatory, here is some additional information.
 
 When running the server for the first time, you probably want to run it by
 hand to confirm that the configuration is correct and things are working as
-expected.
+expected. Once you know things are working correctly, you may want to setup
+a service so that the server runs automatically.
 
 The server must be started as root, since it needs access to the portmapper's
 privileged port, but once the server is running, it lowers its uid to 'nobody'
@@ -147,10 +148,10 @@ mount their 'public' directory:
 
     mount 127.0.0.1:/foo/public /mnt
 
-Once you have confirmed that the server works as expected, you will probably
-want to setup a service in your OS so that the server runs automatically
-when the system boots. Setting up a service like this is OS-specific and is
-disccused in the following section.
+Once you have confirmed that the server works as expected, you can setup a
+service on your system so that the server runs automatically when the system
+boots. Setting up a service like this is OS-specific and is disccused in the
+following section.
 
 ## OS Specific Considerations
 
@@ -163,6 +164,8 @@ There is normally no portmapper running on Darwin so the server runs with it's
 built-in portmapper.
 
 The uid/gid for 'nobody' is -2.
+
+TBD launchd setup
 
 ### Linux
 
@@ -206,63 +209,64 @@ To setup the server as a service, so that it runs automatically when the
 system boots, you need to hook into the system's service manager. Linux offers
 a variety of dfferent service managers, depending upon the distribution.
 
-#### rc files
+  * rc files
 
-The traditional Unix rc file mechanism is not really a service manager but
-it does provide a way to start or stop services when the system is booting
-or shutting down.
+    The traditional Unix rc file mechanism is not really a service manager but
+    it does provide a way to start or stop services when the system is booting
+    or shutting down.
 
-The `svc/rc/mantanfs` file is a shell script which will start up the server.
-Make a copy of this file into `/etc/init.d`. If necessary, edit the file and
-provide the correct paths to 'node', 'server.js' and your configuration file.
+    The `svc/rc/mantanfs` file is a shell script which will start up the server.
+    Make a copy of this file into `/etc/init.d`. If necessary, edit the file and
+    provide the correct paths to 'node', 'server.js' and your configuration
+    file.
 
-Symlink the following names to the 'mantanfs' file:
+    Symlink the following names to the 'mantanfs' file:
 
-    ln -s /etc/rc3.d/S90mantanfs -> ../init.d/mantanfs
-    ln -s /etc/rc4.d/S90mantanfs -> ../init.d/mantanfs
-    ln -s /etc/rc5.d/S90mantanfs -> ../init.d/mantanfs
-    ln -s /etc/rc0.d/K90mantanfs -> ../init.d/mantanfs
-    ln -s /etc/rc1.d/K90mantanfs -> ../init.d/mantanfs
-    ln -s /etc/rc2.d/K90mantanfs -> ../init.d/mantanfs
-    ln -s /etc/rc6.d/K90mantanfs -> ../init.d/mantanfs
+        ln -s /etc/rc3.d/S90mantanfs -> ../init.d/mantanfs
+        ln -s /etc/rc4.d/S90mantanfs -> ../init.d/mantanfs
+        ln -s /etc/rc5.d/S90mantanfs -> ../init.d/mantanfs
+        ln -s /etc/rc0.d/K90mantanfs -> ../init.d/mantanfs
+        ln -s /etc/rc1.d/K90mantanfs -> ../init.d/mantanfs
+        ln -s /etc/rc2.d/K90mantanfs -> ../init.d/mantanfs
+        ln -s /etc/rc6.d/K90mantanfs -> ../init.d/mantanfs
 
-The script directs the server log to '/var/log/mantanfs.log'.
+    The script directs the server log to '/var/log/mantanfs.log'.
 
-#### Systemd
+  * Systemd
 
-See this [wiki](https://fedoraproject.org/wiki/Systemd) for more details
-on configuring and using systemd.  Also see the `systemd.unit(5)` and
-`systemd.service(5)` man pages.
+    See this [wiki](https://fedoraproject.org/wiki/Systemd) for more details
+    on configuring and using systemd.  Also see the `systemd.unit(5)` and
+    `systemd.service(5)` man pages.
 
-The `svc/systemd/mantanfs.service` file provides an example configuration for
-systemd. Make a copy of this file into /lib/systemd/system. If necessary, edit
-the file and provide the correct paths to 'node', 'server.js' and your
-configuration file.
+    The `svc/systemd/mantanfs.service` file provides an example configuration
+    for systemd. Make a copy of this file into /lib/systemd/system. If
+    necessary, edit the file and provide the correct paths to 'node',
+    'server.js' and your configuration file.
 
-Run the following to start the service:
+    Run the following to start the service:
 
-    systemctl start mantanfs.service
+        systemctl start mantanfs.service
 
-Since systemd has its own logging, you must use the 'journalctl' command to
-look at the logs.
+    Since systemd has its own logging, you must use the 'journalctl' command to
+    look at the logs.
 
-    journalctl _SYSTEMD_UNIT=mantanfs.service
+        journalctl _SYSTEMD_UNIT=mantanfs.service
 
-#### Upstart
+  * Upstart
 
-See this [cookbook](http://upstart.ubuntu.com/cookbook/) for more details
-on configuring and using upstart.
+    See this [cookbook](http://upstart.ubuntu.com/cookbook/) for more details
+    on configuring and using upstart.
 
-The `svc/upstart/mantanfs.conf` file provides an example configuration for
-upstart. Make a copy of this file into /etc/init. If necessary, edit the file
-and provide the correct paths to 'node', 'server.js' and your configuration
-file.
+    The `svc/upstart/mantanfs.conf` file provides an example configuration for
+    upstart. Make a copy of this file into /etc/init. If necessary, edit the
+    file and provide the correct paths to 'node', 'server.js' and your
+    configuration file.
 
-Run the following to start the service:
+    Run the following to start the service:
 
-    initctl start mantanfs
+        initctl start mantanfs
 
-The server log should be available as '/var/log/upstart/mantanfs.log'.
+    The server log should be available as '/var/log/upstart/mantanfs.log'.
 
 ### SmartOS
 
