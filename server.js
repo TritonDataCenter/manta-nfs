@@ -332,6 +332,10 @@ function convert_neg_id(id)
         gid: cfg.nfs.gid || gid
     });
 
+    // must always use the system's portmapper on sunos
+    if (os_platform === 'sunos')
+        cfg.portmap.usehost = true;
+
     cfg.mount.fs = mfs;
     cfg.nfs.fs = mfs;
     cfg.nfs.fd_cache = LRU({
