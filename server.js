@@ -196,7 +196,13 @@ function configure() {
 
     // Can set uid and gid to specify the uid/gid for 'nobody' on the client.
     // If not provided, the server's values for 'nobody' will be used.
-    cfg.nfs = cfg.nfs || {};
+    if (!cfg.nfs) {
+        cfg.nfs = {
+            'uid': convert_neg_id(userid.uid('nobody')),
+            'gid': convert_neg_id(userid.gid('nobody'))
+        };
+    }
+
     assert.object(cfg.nfs, 'config.nfs');
     cfg.nfs.fd_cache = cfg.nfs.fd_cache || {
         max: 10000,
