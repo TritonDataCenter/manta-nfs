@@ -83,6 +83,16 @@ self-explanatory, here is some additional information.
     but this also increases the window in which data only exists in the local
     cache. The maximum number of parallel writebacks defaults to 5.
 
+    The cache size is not a hard limit. It is possible for more space to
+    be used than is configured. For example, if an object is larger than the
+    cache size, then if that object is pulled into the cache, the whole object
+    must be downloaded and the space used by the object will be consumed. This
+    would also force all of the other objects out of the cache, since the space
+    used exceeds the size limit. Another example is with dirty files. These
+    cannot be evicted from the cache until they have been uploaded back to
+    Manta, so the cache space used can exceed the size limit until the objects
+    have been completely uploaded.
+
   * The `mount` section's `address` field can be used to specify an address
     other than localhost for the server to listen on. Using '0.0.0.0' tells the
     server to listen on all addresses. Both the mountd and nfsd within the
