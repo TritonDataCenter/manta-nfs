@@ -73,7 +73,7 @@ self-explanatory, here is some additional information.
     cache, the time-to-live, writeback delay time and number of parallel
     writebacks for the cache can be set in this section.
 
-    The default cache is under '/var/tmp/mfsdb' with a size limit of 1GB of
+    The default cache is under '/var/tmp/mfsdb' with a size limit of 5GB of
     local disk space. The time-to-live is the number of seconds a file will be
     cached before checking to see if it is stale. The default is twelve hours
     (43200 seconds). The writeback time is the number of seconds a dirty file

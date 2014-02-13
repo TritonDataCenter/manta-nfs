@@ -8,9 +8,9 @@
     },
     "database": {
         "_comment": "the default DB and cache is under /var/tmp/mfsdb",
-        "location": "/var/mantanfs",
+        "location": "/var/tmp/mfsdb",
         "_comment2": "how much local disk space to use for caching",
-        "sizeMB": 1024,
+        "sizeMB": 5120,
         "_comment3": "time-to-live in cache before cheking if stale (secs)",
         "ttl": 43200,
         "_comment4": "time for dirty file to be cached before writeback (secs)",
