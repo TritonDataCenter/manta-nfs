@@ -75,8 +75,8 @@ self-explanatory, here is some additional information.
 
     The default cache is under '/var/tmp/mfsdb' with a size limit of 1GB of
     local disk space. The time-to-live is the number of seconds a file will be
-    cached before checking to see if it is stale. The default is one hour
-    (3600 seconds). The writeback time is the number of seconds a dirty file
+    cached before checking to see if it is stale. The default is twelve hours
+    (43200 seconds). The writeback time is the number of seconds a dirty file
     will be cached before being written back to Manta. The default is one
     minute (60 seconds). If files are updated regularly (e.g. log files) then
     it might make sense to increase the timeout to reduce writeback traffic,

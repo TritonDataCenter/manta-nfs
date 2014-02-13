@@ -12,7 +12,7 @@
         "_comment2": "how much local disk space to use for caching",
         "sizeMB": 1024,
         "_comment3": "time-to-live in cache before cheking if stale (secs)",
-        "ttl": 3600,
+        "ttl": 43200,
         "_comment4": "time for dirty file to be cached before writeback (secs)",
         "wbtime": 60,
         "_comment5": "number of parallel writebacks",

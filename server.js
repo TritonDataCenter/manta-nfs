@@ -131,7 +131,7 @@ function configure() {
         cfg.database = {
             location: '/var/tmp/mfsdb',
             sizeMB: 1024,
-            ttl: 3600,
+            ttl: 43200,
             wbtime: 60,
             num_par: 5
         };
