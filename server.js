@@ -127,15 +127,24 @@ function configure() {
     if (cfg.database) {
         assert.object(cfg.database, 'config.database');
     } else {
-        // default local cache config
-        cfg.database = {
-            location: '/var/tmp/mfsdb',
-            sizeMB: 1024,
-            ttl: 43200,
-            wbtime: 60,
-            num_par: 5
-        };
+        cfg.database = {};
     }
+
+    // default local cache config values if any are not provided
+    if (!cfg.database.location)
+        cfg.database.location = '/var/tmp/mfsdb';
+
+    if (!cfg.database.sizeMB)
+        cfg.database.sizeMB = 1024;
+
+    if (!cfg.database.ttl)
+        cfg.database.ttl = 43200;
+
+    if (!cfg.database.wbtime)
+        cfg.database.wbtime = 60;
+
+    if (!cfg.database.num_par)
+        cfg.database.num_par = 5;
 
     if (cfg.portmap) {
         assert.object(cfg.portmap, 'config.portmap');
