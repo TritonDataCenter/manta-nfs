@@ -68,10 +68,10 @@ self-explanatory, here is some additional information.
     information takes precedence over the environment variables if both are
     set.
 
-  * The `database` section can be used to configure where the server will cache
-    local copies of the Manta objects. The location, size of the cache, the
-    time-to-live, writeback time and number of parallel writebacks for the
-    cache must be set if this section is provided.
+  * The `database` section can be used to configure where and how the server
+    will cache local copies of the Manta objects. The location, size of the
+    cache, the time-to-live, writeback delay time and number of parallel
+    writebacks for the cache can be set in this section.
 
     The default cache is under '/var/tmp/mfsdb' with a size limit of 1GB of
     local disk space. The time-to-live is the number of seconds a file will be
