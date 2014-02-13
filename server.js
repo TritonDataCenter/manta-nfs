@@ -197,9 +197,29 @@ function configure() {
     // Can set uid and gid to specify the uid/gid for 'nobody' on the client.
     // If not provided, the server's values for 'nobody' will be used.
     if (!cfg.nfs) {
+        var t_uid;
+        var t_gid;
+
+        try {
+            t_uid = convert_neg_id(userid.uid('nobody'));
+        } catch (e1) {
+            t_uid = 65534;
+        }
+
+        try {
+            t_gid = convert_neg_id(userid.gid('nobody'));
+        } catch (e1) {
+            // Linux uses 'nogroup' instead of 'nobody'
+            try {
+                t_gid = convert_neg_id(userid.gid('nogroup'));
+            } catch (e2) {
+                t_gid = t_uid;
+            }
+        }
+
         cfg.nfs = {
-            'uid': convert_neg_id(userid.uid('nobody')),
-            'gid': convert_neg_id(userid.gid('nobody'))
+            'uid': t_uid,
+            'gid': t_gid
         };
     }
 
