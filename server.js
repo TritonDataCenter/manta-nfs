@@ -475,6 +475,11 @@ function convert_neg_id(id)
                 cfg.portmap.port);
             var pmapclient = app.createPortmapClient(cfg.portmap);
 
+            pmapclient.on('error', function (e) {
+                log.fatal(e, 'unable to connect to the system`s portmapper');
+                process.exit(1);
+            });
+
             pmapclient.once('connect', function () {
                 pmapclient.set(mntmapping, function (err1) {
                     if (err1) {
