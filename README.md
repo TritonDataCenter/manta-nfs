@@ -5,6 +5,7 @@ server which uses
 [Joyent Manta](http://www.joyent.com/products/manta) as the backing store.
 The server implements all NFS functionality, although some OS-level commands,
 such as 'chmod', will have no effect since Manta does not support that concept.
+The server is implemented in node.js and has only been tested on v0.10.x.
 
 ## Overview
 
