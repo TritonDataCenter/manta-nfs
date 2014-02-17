@@ -3,12 +3,17 @@
 `manta-nfs` implements a [NFS vers. 3](http://tools.ietf.org/html/rfc1813)
 server which uses
 [Joyent Manta](http://www.joyent.com/products/manta) as the backing store.
-The server implements all NFS functionality, although some commands,
-such as 'chmod', will have no effect since Manta does not support them.
-Unlike Manta, the server provides normal POSIX write semantics via the use
-of a local object cache.
+The server implements all NFS functionality, although some OS-level commands,
+such as 'chmod', will have no effect since Manta does not support that concept.
 
 ## Overview
+
+The server is a process which runs locally (i.e. on your laptop, in your
+zone or on your standalone system) and services NFS requests. The server then
+acts as a gateway for those requests back into Manta. Manta objects are
+cached locally in the machine's file system so that all NFS operations can
+be supported. Unlike Manta, the server provides the typical POSIX write
+semantics via its use of the local object cache.
 
 The server cannot run on a system which is already acting as a NFS server
 since there would be a conflict on the required ports.
@@ -16,7 +21,8 @@ In this case, the server will detect the existing server and exit.
 
 The server includes a built-in portmapper but it will also interoperate
 transparently with the system's portmapper (usually rpcbind) if one is running.
-The server also includes a built-in mountd and nfsd.
+The server also includes a built-in mountd and nfsd. There is no lockd provided
+by the server.
 
 By default, the server will only listen on the localhost address and only
 serve files locally. However, it can be configured to serve files to
@@ -32,8 +38,9 @@ using one mechanism (e.g. NFS) and immediately read it using another (e.g. the
 CLI) then you may not see the same data. The server will hold an object locally
 for a period of time before writing it back to Manta. Likewise, if you update
 an existing object using the CLI, the server might have a stale copy in its
-cache. In this case you can force the server to refresh its cached copy by
-simply 'touch'ing the file.
+cache. In this case you can wait for the server to notice the object has
+changed or force the server to refresh its cached copy by simply 'touch'ing the
+file.
 
 ## Getting Started
 
