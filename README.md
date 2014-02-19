@@ -5,7 +5,8 @@ server which uses
 [Joyent Manta](http://www.joyent.com/products/manta) as the backing store.
 The server implements all NFS functionality, although some OS-level commands,
 such as 'chmod', will have no effect since Manta does not support that concept.
-The server is implemented in node.js and has only been tested on v0.10.x.
+The server is implemented in
+[node.js]((http://nodejs.org/) and has only been tested on v0.10.x.
 
 ## Overview
 
@@ -89,7 +90,8 @@ self-explanatory, here is some additional information.
     minute (60 seconds). If files are updated regularly (e.g. log files) then
     it might make sense to increase the timeout to reduce writeback traffic,
     but this also increases the window in which data only exists in the local
-    cache. The maximum number of parallel writebacks defaults to 5.
+    cache. The number of parallel writebacks defaults to 2. That is, if there
+    are multiple dirty files to writeback, two at a time will be written back.
 
     The cache size is not a hard limit. It is possible for more space to
     be used than is configured. For example, if an object is larger than the
@@ -168,8 +170,20 @@ mount their 'public' directory:
 
 Once you have confirmed that the server works as expected, you can setup a
 service on your system so that the server runs automatically when the system
-boots. Setting up a service like this is OS-specific and is disccused in the
-following section.
+boots. Setting up a service like this is OS-specific and is discussed in that
+section for each operating system.
+
+## Limitations
+
+There are certain NFS operations which cannot be supported because Manta
+itself does not support the underlying concept. These are:
+
+  * Changing the owner uid or gid of a file
+  * Changing the mtime or atime of a file
+  * Changing or setting the mode of a file
+  * Creating a file exclusively (O_EXCL - will happen only in the cache)
+  * Making devices, sockets or FIFOs
+  * Symlinks and hardlinks
 
 ## OS Specific Considerations
 

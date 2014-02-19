@@ -144,7 +144,7 @@ function configure() {
         cfg.database.wbtime = 60;
 
     if (!cfg.database.num_par)
-        cfg.database.num_par = 5;
+        cfg.database.num_par = 2;
 
     if (cfg.portmap) {
         assert.object(cfg.portmap, 'config.portmap');

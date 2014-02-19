@@ -16,7 +16,7 @@
         "_comment4": "time for dirty file to be cached before writeback (secs)",
         "wbtime": 60,
         "_comment5": "number of parallel writebacks",
-        "num_par": 5
+        "num_par": 2
     },
     "portmap": {
         "_comment": "usehost forces use of the system's portmapper",
