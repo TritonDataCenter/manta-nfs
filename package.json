@@ -28,7 +28,6 @@
         "nfs": "git+ssh://git@github.com:joyent/node-nfs.git#master",
         "once": "1.2.0",
         "oncrpc": "git+ssh://git@github.com:joyent/node-oncrpc.git#master",
-        "sse4_crc32": "git://github.com/Voxer/sse4_crc32.git",
         "statvfs": "2.1.0",
         "userid": "git://github.com/jandre/node-userid.git",
         "vasync": "1.4.0"
