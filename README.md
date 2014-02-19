@@ -183,6 +183,7 @@ itself does not support the underlying concept. These are:
   * Changing or setting the mode of a file
   * Creating a file exclusively (O_EXCL - will happen only in the cache)
   * Making devices, sockets or FIFOs
+  * Renaming or moving directories
   * Symlinks and hardlinks
 
 ## OS Specific Considerations
