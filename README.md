@@ -198,6 +198,12 @@ built-in portmapper.
 
 The uid/gid for 'nobody' is -2.
 
+Because you cannot rename a directory, creating new folders using `finder` is
+problematic. The new folder will initially be created by finder with the name
+`untitled folder`, but you will not be able to rename it. Instead, you must use
+a terminal window and the command line to create directories with the correct
+name.
+
 TBD launchd setup
 
 ### Linux
