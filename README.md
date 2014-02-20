@@ -191,6 +191,7 @@ itself does not support the underlying concept. These are:
 This section discusses any issues that are specific to running the server on
 a given operating system.
 
+
 ### Darwin
 
 There is normally no portmapper running on Darwin so the server runs with it's
@@ -204,7 +205,20 @@ problematic. The new folder will initially be created by finder with the name
 a terminal window and the command line to create directories with the correct
 name.
 
-TBD launchd setup
+
+The `svc/launchd/com.joyent.mantanfs.plist` file provides an example configuration for
+launchd(8). If necessary, edit the file and provide the correct paths to 'node',
+'server.js' and your configuration file.
+
+Note that this configuration will bring the service up only if an interface other than lo
+has an IPV4/IPV6 address.  However the reverse is not true, and launchd will not bring
+down the service if the network goes away.
+
+Run the following to load and start the service:
+
+    sudo cp svc/launchd/com.joyent.mantanfs.plist /System/Library/LaunchDaemons/
+    sudo launchctl load /System/Library/LaunchDaemons/com.joyent.mantanfs.plist
+
 
 ### Linux
 
