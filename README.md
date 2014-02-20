@@ -327,6 +327,10 @@ explicitly. e.g.
 
     pfexec ./mount 127.0.0.1:/foo.bar/public /home/foo/mnt
 
+For unmounting, you can use this
+[fixed umount command](http://us-east.manta.joyent.com/jjelinek/public/umount)
+explicitly.
+
 On SmartOS the uid/gid for 'nobody' is 60001.
 
 The `svc/smf/manta-nfs.xml` file provides an example configuration for
