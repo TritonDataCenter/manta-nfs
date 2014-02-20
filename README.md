@@ -5,8 +5,8 @@ server which uses
 [Joyent Manta](http://www.joyent.com/products/manta) as the backing store.
 The server implements all NFS functionality, although some OS-level commands,
 such as 'chmod', will have no effect since Manta does not support that concept.
-The server is implemented in [node.js](http://nodejs.org/) and requires
-**v0.10.x**.
+The server is implemented in [node.js](http://nodejs.org/) and **requires**
+v0.10.x.
 
 ## Overview
 
@@ -340,3 +340,7 @@ smf(5). If necessary, edit the file and provide the correct paths to 'node',
 Run the following to load and start the service:
 
     svccfg -v import svc/smf/manta-nfs.xml
+
+### Windows
+
+[instructions coming soon]
