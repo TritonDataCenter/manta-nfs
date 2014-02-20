@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.joyent.mantanfs</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/node</string>
+        <string>/usr/local/manta-nfs/server.js</string>
+        <string>-f</string>
+        <string>/usr/local/manta-nfs/etc/manta-nfs.json</string>
+    </array>
+    <key>StandardOutPath</key>
+    <string>/var/log/manta-nfs.log</string>
+    <key>StandardErrorPath</key>
+    <string>/var/log/manta-nfs.log</string>
+    <key>KeepAlive</key>
+    <dict>
+      <key>NetworkState</key>
+      <true/>
+    </dict>
+</dict>
+</plist>
