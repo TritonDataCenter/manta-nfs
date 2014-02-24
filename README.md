@@ -57,7 +57,7 @@ At a minimum the server needs the configuration information necessary to
 connect to a Manta account. If the Manta
 [environment variables](http://apidocs.joyent.com/manta/#setting-up-your-environment)
 are already setup, the server will use those and no other configuration is
-needed. The server does not support ssh key forwarding.
+needed.
 
 In addition to the Manta account information, there is a variety of other
 configuration options. An example configuration file, showing all possible
