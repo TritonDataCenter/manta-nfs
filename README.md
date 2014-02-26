@@ -59,7 +59,7 @@ connect to a Manta account. If the Manta
 are already setup, the server will use those and no other configuration is
 needed.
 
-In addition to the Manta account information, there is a variety of other
+In addition to the Manta account information, there are a variety of other
 configuration options. An example configuration file, showing all possible
 configuration options, is provided in `etc/example.json`, although that file
 should not be used to create your personal configuration. A simpler
