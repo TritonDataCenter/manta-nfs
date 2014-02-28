@@ -199,20 +199,19 @@ built-in portmapper.
 
 The uid/gid for 'nobody' is -2.
 
-Because you cannot rename a directory, creating new folders using `finder` is
-problematic. The new folder will initially be created by finder with the name
+Because you cannot rename a directory, creating new folders using `Finder` is
+problematic. The new folder will initially be created by Finder with the name
 `untitled folder`, but you will not be able to rename it. Instead, you must use
 a terminal window and the command line to create directories with the correct
 name.
 
+The `svc/launchd/com.joyent.mantanfs.plist` file provides an example
+configuration for launchd(8). If necessary, edit the file and provide the
+correct paths to 'node', 'server.js' and your configuration file.
 
-The `svc/launchd/com.joyent.mantanfs.plist` file provides an example configuration for
-launchd(8). If necessary, edit the file and provide the correct paths to 'node',
-'server.js' and your configuration file.
-
-Note that this configuration will bring the service up only if an interface other than lo
-has an IPV4/IPV6 address.  However the reverse is not true, and launchd will not bring
-down the service if the network goes away.
+Note that this configuration will bring the service up only if an interface
+other than lo has an IPV4/IPV6 address.  However the reverse is not true, and
+launchd will not bring down the service if the network goes away.
 
 Run the following to load and start the service:
 
@@ -329,8 +328,8 @@ enable it.
 
     svcadm enable network/rpc/bind
 
-If you intend to serve external hosts, you must also ensure that the bind service
-is configured to allow access. To check this:
+If you intend to serve external hosts, you must also ensure that the bind
+service is configured to allow access. To check this:
 
     svccfg -s bind listprop config/local_only
 
@@ -367,4 +366,26 @@ Run the following to load and start the service:
 
 ### Windows
 
-[instructions coming soon]
+Because of the POSIX dependencies in the server, the code does not currently
+build on Windows. However, the Windows NFS client can be used with a server
+running on a Unix-based host. Before you can use NFS you may need to set it up
+on your Windows system. The procedure varies by which version of Windows
+is in use. See the documentation for your release for the correct procedure
+to install NFS.
+
+Once NFS is installed, you simply mount from the server as usual. Substitute
+the server's IP address and the correct user name in the following example:
+
+    C:\>mount \\192.168.0.1\foo\public *
+    Z: is now successfully connected to \\192.168.0.1\foo\public
+
+    The command completed successfully.
+
+Windows will assign an unused drive letter for the mount. In this example the
+drive letter was Z:.
+
+Windows Explorer has the same limitation as Darwin's Finder when creating a
+new folder. The new folder will initially be created by Explorer with the name
+`New folder`, but you will not be able to rename it. Instead, you must use
+a terminal window and the command line to create directories with the correct
+name.
