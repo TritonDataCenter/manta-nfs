@@ -323,11 +323,21 @@ a variety of dfferent service managers, depending upon the distribution.
 
 ### SmartOS
 
-In order to mount from the local host, the system's 'rpcbind' must be running.
-The built-in portmapper cannot be used. If the svc is not already enabled,
+In order to mount from the host, the system's 'rpcbind' must be running.  The
+server's built-in portmapper cannot be used. If the svc is not already enabled,
 enable it.
 
     svcadm enable network/rpc/bind
+
+If you intend to serve external hosts, you must also ensure that the bind service
+is configured to allow access. To check this:
+
+    svccfg -s bind listprop config/local_only
+
+If this is set to true, you need to change it to false.
+
+    svccfg -s bind setprop config/local_only=false
+    svcadm refresh bind
 
 Due to a mis-design in the SmartOS mount code, mounting will fail on older
 platforms. If you see the following, you know your mount code is incorrect.
