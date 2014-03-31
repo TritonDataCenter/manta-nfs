@@ -1,33 +1,45 @@
 # manta-nfs
 
 `manta-nfs` implements a [NFS vers. 3](http://tools.ietf.org/html/rfc1813)
-server which uses
+server that uses
 [Joyent Manta](http://www.joyent.com/products/manta) as the backing store.
 The server implements all NFS functionality, although some OS-level commands,
-such as 'chmod', will have no effect since Manta does not support that concept.
+such as `chmod`, will have no effect since Manta does not support that concept.
 The server is implemented in [node.js](http://nodejs.org/) and **requires**
 v0.10.x.
 
+- [Overview](#overview)
+- [Getting Started](#getting-started)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Limitations](#limitations)
+- [OS Specific Considerations](#os-specific-considerations)
+    - [Darwin (OS X)](#darwin-os-x)
+    - [Linux](#linux)
+    - [SmartOS](#smartos)
+    - [Windows](#windows)
+
+
 ## Overview
 
-The server is a process which runs locally (i.e. on your laptop, in your
-zone or on your standalone system) and services NFS requests. The server then
+The server is a process that runs locally on your laptop, in your
+zone, or on a standalone system, and services NFS requests. The server then
 acts as a gateway for those requests back into Manta. Manta objects are
 cached locally in the machine's file system so that all NFS operations can
 be supported. Unlike Manta, the server provides the typical POSIX write
 semantics via its use of the local object cache.
 
-The server cannot run on a system which is already acting as a NFS server
+The server cannot run on a system that is already acting as a NFS server
 since there would be a conflict on the required ports.
 In this case, the server will detect the existing server and exit.
 
-The server includes a built-in portmapper but it will also interoperate
-transparently with the system's portmapper (usually rpcbind) if one is running.
-The server also includes a built-in mountd and nfsd. There is no lockd provided
+The server includes a built-in portmapper, but it will also interoperate
+transparently with the system's portmapper (usually `rpcbind`) if one is running.
+The server also includes a built-in `mountd` and `nfsd`. There is no `lockd` provided
 by the server.
 
-By default, the server will only listen on the localhost address and only
-serve files locally. However, it can be configured to serve files to
+By default, the server only listens on the localhost address and only
+serves files locally. However, it can be configured to serve files to
 external hosts.
 
 Because the server caches Manta objects locally, care must be taken when
@@ -35,14 +47,16 @@ accessing Manta in different ways or from different locations. There is no
 attempt to be coherent across multiple systems. Given this, you should
 not run more than one instance of the server for the same Manta user. Likewise,
 you should not write to the same object using both NFS and the CLI. Reading
-objects using both NFS and the CLI is obviously fine. If you write an object
+objects using both NFS and the CLI is obviously fine.
+
+If you write an object
 using one mechanism (e.g. NFS) and immediately read it using another (e.g. the
-CLI) then you may not see the same data. The server will hold an object locally
+CLI), you may not see the same data. The server holds an object locally
 for a period of time before writing it back to Manta. Likewise, if you update
 an existing object using the CLI, the server might have a stale copy in its
 cache. In this case you can wait for the server to notice the object has
-changed or force the server to refresh its cached copy by simply 'touch'ing the
-file.
+changed, or you can force the server to refresh its cached copy by
+simply `touch`ing the file.
 
 ## Getting Started
 
@@ -56,20 +70,20 @@ readme describes how to start the server and how to perform an NFS mount.
 At a minimum the server needs the configuration information necessary to
 connect to a Manta account. If the Manta
 [environment variables](http://apidocs.joyent.com/manta/#setting-up-your-environment)
-are already setup, the server will use those and no other configuration is
+are already set up, the server will use those and no other configuration is
 needed.
 
 In addition to the Manta account information, there are a variety of other
 configuration options. An example configuration file, showing all possible
-configuration options, is provided in `etc/example.json`, although that file
-should not be used to create your personal configuration. A simpler
+configuration options, is provided in `etc/example.json`, but you should not
+use that file to create your personal configuration. A simpler
 `etc/template.json` file is provided as a better starting point for your
 personal configuration. Each section of the configuration file is optional.
-The configuration file is specified to the server via the '-f' option. e.g.
+The configuration file is specified to the server via the `-f` option:
 
     node server.js -f etc/myconfig.json
 
-Although most of the sections in the example config file should be
+Although most of the sections in `etc/example.json` should be
 self-explanatory, here is some additional information.
 
   * The `manta` section must be used to specify the required access information
@@ -78,11 +92,11 @@ self-explanatory, here is some additional information.
     set.
 
   * The `database` section can be used to configure where and how the server
-    will cache local copies of the Manta objects. The location, size of the
-    cache, the time-to-live, writeback delay time and number of parallel
+    caches local copies of the Manta objects. The location, size of the
+    cache, the time-to-live, writeback delay time, and number of parallel
     writebacks for the cache can be set in this section.
 
-    The default cache is under '/var/tmp/mfsdb' with a size limit of 5GB of
+    The default cache is under `/var/tmp/mfsd` with a size limit of 5GB of
     local disk space. The time-to-live is the number of seconds a file will be
     cached before checking to see if it is stale. The default is twelve hours
     (43200 seconds). The writeback time is the number of seconds a dirty file
@@ -105,7 +119,7 @@ self-explanatory, here is some additional information.
 
   * The `mount` section's `address` field can be used to specify an address
     other than localhost for the server to listen on. Using '0.0.0.0' tells the
-    server to listen on all addresses. Both the mountd and nfsd within the
+    server to listen on all addresses. Both the `mountd` and `nfsd` within the
     server will listen on the given address. Since the server has full access
     to all of the user's Manta data, it is a good idea to limit foreign host
     access when listening on the external network. The `hosts_allow` or
@@ -126,16 +140,16 @@ self-explanatory, here is some additional information.
 
 When running the server for the first time, you probably want to run it by
 hand to confirm that the configuration is correct and things are working as
-expected. Once you know things are working correctly, you may want to setup
+expected. Once you know things are working correctly, you may want to set up
 a service so that the server runs automatically.
 
-The server must be started as root, since it needs access to the portmapper's
-privileged port, but once the server is running, it lowers its uid to 'nobody'
-to improve security. The 'sudo' or 'pfexec' commands are typically used to run
+The server must be started as root since it needs access to the portmapper's
+privileged port. Once the server is running, it lowers its uid to 'nobody'
+to improve security. The `sudo` or `pfexec` commands are typically used to run
 a command as root, depending on which OS you're using.
 
 If you're using the Manta environment variables as the source of your Manta
-account information, and if you're using 'sudo', use the '-E' option to pass
+account information and you're using `sudo`, use the `-E` option to pass
 those forward. On some Linux distributions sudo will reset 'HOME' to root's
 home directory. On those distributions you must also set HOME back to your home
 directory.
@@ -152,8 +166,9 @@ To pass in a config file, use the -f option:
 
     sudo node server.js -f etc/myconfig.json
 
-All output logging is done via bunyan. Once started, the server will output an
-occasional log message, but the '-d' or '-v' option can be used to change the
+All output logging is done via [bunyan](https://github.com/trentm/node-bunyan).
+Once started, the server will output an
+occasional log message, but the `-d` or `-v` options can be used to change the
 bunyan logging level to either 'debug' or 'trace'. Logging at either of these
 levels is not recommended, except during debugging, since there will be many
 log entries for each NFS operation. You may want to redirect the output from
@@ -161,21 +176,21 @@ the server into a file:
 
     sudo node server.js -d -f etc/myconfig.json >log 2>&1
 
-To mount a Manta directory, the standard NFS client mount command is used with
+To mount a Manta directory, use the standard NFS client `mount` command with
 a Manta path. The user name used here must be the same user as is configured
 for Manta access. For example, if Manta user 'foo' is configured, then to
 mount their 'public' directory:
 
     sudo mount 127.0.0.1:/foo/public /mnt
 
-Once you have confirmed that the server works as expected, you can setup a
+Once you have confirmed that the server works as expected, you can set up a
 service on your system so that the server runs automatically when the system
 boots. Setting up a service like this is OS-specific and is discussed in that
 section for each operating system.
 
 ## Limitations
 
-There are certain NFS operations which cannot be supported because Manta
+There are certain NFS operations that cannot be supported because Manta
 itself does not support the underlying concept. These are:
 
   * Changing the owner uid or gid of a file
@@ -192,9 +207,9 @@ This section discusses any issues that are specific to running the server on
 a given operating system.
 
 
-### Darwin
+### Darwin (OS X)
 
-There is normally no portmapper running on Darwin so the server runs with it's
+There is normally no portmapper running on Darwin so the server runs with its
 built-in portmapper.
 
 The uid/gid for 'nobody' is -2.
@@ -210,7 +225,7 @@ configuration for launchd(8). If necessary, edit the file and provide the
 correct paths to 'node', 'server.js' and your configuration file.
 
 Note that this configuration will bring the service up only if an interface
-other than lo has an IPV4/IPV6 address.  However the reverse is not true, and
+other than `lo` has an IPV4/IPV6 address.  However the reverse is not true, and
 launchd will not bring down the service if the network goes away.
 
 Run the following to load and start the service:
@@ -234,7 +249,7 @@ On Centos, install the `nfs-utils` package.
 Installing these packages usually also causes 'rpcbind' to be installed and
 started. However, due to a mis-design in the Linux rpcbind code, the server
 will not be able to register with the system's rpcbind. There are two options
-to workaround this:
+to work around this:
 
   * Disable the system's rpcbind and let the server use its built-in
     portmapper. The method for disabling the system's rpcbind varies depending
@@ -267,7 +282,7 @@ a variety of dfferent service managers, depending upon the distribution.
     it does provide a way to start or stop services when the system is booting
     or shutting down.
 
-    The `svc/rc/mantanfs` file is a shell script which will start up the server.
+    The `svc/rc/mantanfs` file is a shell script that will start up the server.
     Make a copy of this file into `/etc/init.d`. If necessary, edit the file and
     provide the correct paths to 'node', 'server.js' and your configuration
     file.
@@ -344,7 +359,7 @@ platforms. If you see the following, you know your mount code is incorrect.
     nfs mount: 127.0.0.1: : RPC: Program not registered
     nfs mount: retrying: /home/foo.bar/mnt
 
-You will either need to run on a newer platform or you can use this 
+You will either need to run on a newer platform or you can use this
 [fixed NFS mount command](http://us-east.manta.joyent.com/jjelinek/public/mount)
 explicitly. e.g.
 
