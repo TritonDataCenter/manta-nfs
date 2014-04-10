@@ -1,0 +1,17 @@
+#!/bin/sh
+
+dir=`dirname $0`
+
+if [ "$MANTA_USER"X == "X" ]; then
+    echo "Error: the manta environment variables must be defined"
+    exit 1
+fi
+
+euid=`id -u`
+
+if [ $euid != 0 ]; then
+    echo "Error: manta-nfs must be started as root"
+    exit 1
+fi
+
+node $dir/../server.js
