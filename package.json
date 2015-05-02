@@ -6,7 +6,7 @@
         "name": "Joyent, Inc.",
         "url": "http://joyent.com/"
     },
-    "license": "MPL",
+    "license": "MPL-2.0",
     "repository": {
         "type": "git",
         "url": "git://github.com/joyent/manta-nfs.git"
