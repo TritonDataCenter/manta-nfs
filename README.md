@@ -234,7 +234,7 @@ Run the following to load and start the service:
     sudo launchctl load /System/Library/LaunchDaemons/com.joyent.mantanfs.plist
 
 
-### Linux
+### Linux (including lx-branded zones)
 
 Some distributions (e.g. Ubuntu or Centos) may not come pre-installed with
 the `/sbin/mount.nfs` command which is needed to perform a mount, while others
@@ -242,14 +242,16 @@ the `/sbin/mount.nfs` command which is needed to perform a mount, while others
 
     apt-get install nfs-common
 
-On Centos, install the `nfs-utils` package.
+On Centos, install the `nfs-utils` package. Depending on the choices described
+below, you may also need to install the `rpcbind` package.
 
     yum install nfs-utils
+    yum install rpcbind
 
-Installing these packages usually also causes 'rpcbind' to be installed and
-started. However, due to a mis-design in the Linux rpcbind code, the server
-will not be able to register with the system's rpcbind. There are two options
-to work around this:
+Based on the distribution's package manager and package dependencies, the
+'rpcbind' command may have been installed and started. However, due to a
+mis-design in the Linux rpcbind code, the manta-nfs server will not be able to
+register with the system's rpcbind. There are two options to work around this:
 
   * Disable the system's rpcbind and let the server use its built-in
     portmapper. The method for disabling the system's rpcbind varies depending
@@ -257,13 +259,20 @@ to work around this:
     package from '/sbin/mount.nfs', then you could simply uninstall that
     package. To disable 'rpcbind' on Ubuntu you can run: `stop portmap`.
 
-  * Run the system's rpcbind in 'insecure' mode using the -i option. Again,
-    the location for specifying additional options for a service varies by
-    distribution. On systems using 'upstart' you can add the option in
-    `/etc/init/portmap.conf`. On systems using 'systemd' you can add the
-    option in `/etc/sysconfig/rpcbind`. On systems which use traditional
-    rc files you must edit `/etc/init.d/rpcbind` and add the option to the
-    invocation of rpcbind in the script.
+  * Run the system's rpcbind in 'insecure' mode using the -i option. The
+    mechanism for specifying customized options for a service varies by
+    distribution and release. The rpcbind configuration file may be named
+    `/etc/init/portmap.conf` or `/etc/sysconfig/rpcbind`. For a distribution
+    which uses traditional sysvinit rc files you may need to  edit
+    `/etc/init.d/rpcbind` and explicitly add the option to the invocation of
+    rpcbind in the script.
+
+    Here is an example entry for the `/etc/sysconfig/rpcbind` file.
+        RPCBIND_ARGS="-i"
+
+If running the manta-nfs server inside an lx-branded zone, the built-in
+portmapper may not work properly. In this case, the second option above (using
+the system's rpcbind) must be used.
 
 On Linux the uid/gid for 'nobody' is 65534.
 
@@ -272,9 +281,15 @@ when you mount. e.g.
 
     mount -o nolock 127.0.0.1:/foo.bar/public /home/foo/mnt
 
+When mounting from inside an lx-branded zone you may need to explicitly
+specify that you want to use the NFSv3 protocol. e.g.
+
+    mount -o nolock,vers=3 127.0.0.1:/foo.bar/public /home/foo/mnt
+
 To setup the server as a service, so that it runs automatically when the
 system boots, you need to hook into the system's service manager. Linux offers
-a variety of dfferent service managers, depending upon the distribution.
+a variety of dfferent service managers, depending upon the distribution and
+release.
 
   * rc files
 
