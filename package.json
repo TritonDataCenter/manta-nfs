@@ -21,7 +21,7 @@
         "dashdash": "1.3.2",
         "lru-cache": "2.5.0",
         "lstream": "0.0.3",
-        "manta": "1.2.6",
+        "manta": "3.0.0",
         "mantafs": "0.1.0",
         "mkdirp": "0.3.5",
         "nfs": "0.1.0",
